@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Layout ── */
+    body { background: var(--gray-50); }
+
+    .admin-layout { display: flex; min-height: 100vh; }
+
+    .admin-sidebar {
+      width: 240px; flex-shrink: 0;
+      background: var(--brown-deep);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 50; overflow-y: auto;
+    }
+
+    .admin-brand {
+      padding: var(--sp-6);
+      border-bottom: 1px solid rgba(255,255,255,.1);
+    }
+
+    .admin-brand-logo {
+      display: flex; align-items: center; gap: var(--sp-3);
+      margin-bottom: var(--sp-2);
+    }
+
+    .admin-brand-icon {
+      width: 36px; height: 36px;
+      background: var(--orange);
+      border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .admin-brand-name {
+      font-family: var(--font-display);
+      font-size: 1.05rem; color: var(--cream); line-height: 1.2;
+    }
+
+    .admin-brand-badge {
+      display: inline-block;
+      background: rgba(232,116,58,.25);
+      color: var(--orange-light);
+      font-size: .65rem; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase;
+      padding: 2px 8px; border-radius: var(--r-full);
+    }
+
+    .admin-nav { padding: var(--sp-3) 0; flex: 1; }
+
+    .admin-nav-section {
+      font-size: .65rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: rgba(253,246,236,.35);
+      padding: var(--sp-4) var(--sp-5) var(--sp-2);
+    }
+
+    .admin-nav-link {
+      display: flex; align-items: center;
+      gap: var(--sp-3); padding: 10px var(--sp-5);
+      color: rgba(253,246,236,.65);
+      font-size: .875rem; font-weight: 600;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      background: none; border-right: none;
+      border-top: none; border-bottom: none;
+      width: 100%; text-align: left;
+    }
+
+    .admin-nav-link:hover { background: rgba(255,255,255,.07); color: var(--cream); }
+
+    .admin-nav-link.active {
+      background: rgba(232,116,58,.15);
+      color: var(--orange-light);
+      border-left-color: var(--orange);
+    }
+
+    .admin-nav-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+    .admin-sidebar-footer {
+      padding: var(--sp-4) var(--sp-5);
+      border-top: 1px solid rgba(255,255,255,.1);
+    }
+
+    /* ── Main ── */
+    .admin-main { margin-left: 240px; flex: 1; min-height: 100vh; }
+
+    .admin-topbar {
+      background: var(--white);
+      border-bottom: 1px solid var(--cream-border);
+      padding: 0 var(--sp-8);
+      height: 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 40;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .admin-topbar-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem; color: var(--brown-deep);
+    }
+
+    .admin-topbar-right {
+      display: flex; align-items: center; gap: var(--sp-3);
+      font-size: .82rem; color: var(--gray-400);
+    }
+
+    .admin-content { padding: var(--sp-8); }
+
+    /* ── Panels ── */
+    .admin-panel { display: none; }
+    .admin-panel.active { display: block; }
+
+    /* ── Stats ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
+      gap: var(--sp-4); margin-bottom: var(--sp-8);
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-xs);
+      padding: var(--sp-5) var(--sp-6);
+    }
+
+    .stat-card-label {
+      font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .07em;
+      color: var(--gray-400); margin-bottom: var(--sp-2);
+    }
+
+    .stat-card-value {
+      font-family: var(--font-display);
+      font-size: 2.2rem; font-weight: 700;
+      color: var(--brown-deep); line-height: 1;
+    }
+
+    .stat-card-icon {
+      font-size: 1.5rem; margin-bottom: var(--sp-3);
+    }
+
+    /* ── Table ── */
+    .table-card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+      margin-bottom: var(--sp-6);
+    }
+
+    .table-card-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-4) var(--sp-6);
+      border-bottom: 1px solid var(--cream-border);
+      flex-wrap: wrap; gap: var(--sp-3);
+    }
+
+    .table-card-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem; color: var(--brown-deep);
+    }
+
+    .table-search {
+      display: flex; align-items: center;
+      gap: var(--sp-2); flex: 1; max-width: 300px;
+    }
+
+    .table-search input {
+      flex: 1; padding: 7px 12px;
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      font-size: .875rem; outline: none;
+      transition: border-color var(--t-fast) var(--ease);
+    }
+
+    .table-search input:focus { border-color: var(--orange); }
+
+    .admin-table { width: 100%; border-collapse: collapse; }
+
+    .admin-table th {
+      font-size: .72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .06em;
+      color: var(--gray-400);
+      padding: var(--sp-3) var(--sp-5);
+      text-align: left;
+      background: var(--gray-50);
+      border-bottom: 1px solid var(--cream-border);
+      white-space: nowrap;
+    }
+
+    .admin-table td {
+      padding: var(--sp-3) var(--sp-5);
+      font-size: .875rem; color: var(--gray-800);
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: middle;
+    }
+
+    .admin-table tr:last-child td { border-bottom: none; }
+    .admin-table tr:hover td { background: var(--gray-50); }
+
+    .table-img {
+      width: 44px; height: 44px;
+      border-radius: var(--r-md);
+      object-fit: cover;
+      background: var(--cream-dark);
+      flex-shrink: 0;
+    }
+
+    .action-btns { display: flex; gap: var(--sp-2); }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      display: none; position: fixed;
+      inset: 0; background: rgba(26,15,10,.6);
+      z-index: 200; align-items: flex-start;
+      justify-content: center;
+      padding: var(--sp-8) var(--sp-4);
+      overflow-y: auto;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal {
+      background: var(--white);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-lg);
+      width: 100%; max-width: 680px;
+      animation: modalIn .25s var(--ease) both;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: translateY(16px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .modal-header {
+      padding: var(--sp-5) var(--sp-6);
+      border-bottom: 1px solid var(--cream-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .modal-title { font-family: var(--font-display); font-size: 1.2rem; color: var(--brown-deep); }
+
+    .modal-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 1.2rem; color: var(--gray-400);
+      padding: 4px; border-radius: var(--r-sm);
+      transition: color var(--t-fast) var(--ease);
+    }
+
+    .modal-close:hover { color: var(--brown); }
+
+    .modal-body { padding: var(--sp-6); }
+
+    .modal-footer {
+      padding: var(--sp-4) var(--sp-6) var(--sp-6);
+      display: flex; justify-content: flex-end; gap: var(--sp-3);
+      border-top: 1px solid var(--cream-border);
+    }
+
+    .form-grid-2 {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: var(--sp-4);
+    }
+
+    .form-grid-3 {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: var(--sp-4);
+    }
+
+    /* Dynamic rows */
+    .dynamic-row {
+      display: flex; gap: var(--sp-2);
+      align-items: flex-start; margin-bottom: var(--sp-2);
+    }
+
+    .dynamic-row-num {
+      width: 28px; height: 28px; flex-shrink: 0;
+      background: var(--orange-pale); color: var(--orange);
+      border-radius: var(--r-full);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .8rem; font-weight: 700;
+      margin-top: 9px;
+    }
+
+    .remove-row-btn {
+      background: none; border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      width: 34px; height: 34px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--gray-400);
+      font-size: .9rem; margin-top: 7px;
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .remove-row-btn:hover { border-color: var(--error); color: var(--error); }
+
+    /* Report tables */
+    .report-row {
+      display: flex; align-items: center;
+      gap: var(--sp-3); padding: var(--sp-3) var(--sp-5);
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .report-row:last-child { border-bottom: none; }
+
+    .report-rank {
+      width: 28px; height: 28px; border-radius: var(--r-full);
+      background: var(--cream); border: 1px solid var(--cream-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .78rem; font-weight: 700; color: var(--gray-600);
+      flex-shrink: 0;
+    }
+
+    .report-rank.gold   { background: var(--amber-pale);  color: var(--amber);  border-color: var(--amber-light); }
+    .report-rank.silver { background: var(--gray-100);    color: var(--gray-600); }
+    .report-rank.bronze { background: var(--orange-pale); color: var(--orange); border-color: var(--brown-light); }
+
+    .report-bar-wrap { flex: 1; height: 6px; background: var(--cream-dark); border-radius: var(--r-full); overflow: hidden; }
+    .report-bar      { height: 100%; border-radius: var(--r-full); background: var(--orange); transition: width .6s var(--ease); }
+
+    @media(max-width:900px) {
+      .admin-sidebar { width: 200px; }
+      .admin-main    { margin-left: 200px; }
+      .admin-content { padding: var(--sp-5); }
+      .form-grid-2   { grid-template-columns: 1fr; }
+      .form-grid-3   { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media(max-width:640px) {
+      .admin-sidebar { display: none; }
+      .admin-main    { margin-left: 0; }
+      .form-grid-3   { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<div class="admin-layout">
+  <aside class="admin-sidebar">
+    <div class="admin-brand">
+      <div class="admin-brand-logo">
+        <div class="admin-brand-icon">🧁</div>
+        <div>
+          <div class="admin-brand-name">Pantry-to-Oven</div>
+          <span class="admin-brand-badge">Admin Panel</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="admin-nav-section">Overview</div>
+      <button class="admin-nav-link active" onclick="showPanel('dashboard', this)">
+        <span class="admin-nav-icon">&#x1F4CA;</span> Dashboard
+      </button>
+
+      <div class="admin-nav-section">Content</div>
+      <button class="admin-nav-link" onclick="showPanel('recipes', this)">
+        <span class="admin-nav-icon">&#x1F373;</span> Recipes
+      </button>
+
+      <div class="admin-nav-section">Users</div>
+      <button class="admin-nav-link" onclick="showPanel('users', this)">
+        <span class="admin-nav-icon">&#x1F465;</span> User Management
+      </button>
+
+      <div class="admin-nav-section">Reports</div>
+      <button class="admin-nav-link" onclick="showPanel('reports', this)">
+        <span class="admin-nav-icon">&#x1F4C8;</span> Reports
+      </button>
+    </nav>
+
+    <div class="admin-sidebar-footer">
+      <a href="home.html" class="btn btn-ghost btn-sm btn-full" style="color:rgba(253,246,236,.6);justify-content:flex-start;gap:var(--sp-2);">
+        &#x1F441; View App
+      </a>
+      <button class="btn btn-ghost btn-sm btn-full" onclick="handleLogout()" style="color:rgba(253,246,236,.6);justify-content:flex-start;gap:var(--sp-2);margin-top:var(--sp-1);">
+        &#x1F6AA; Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="admin-main">
+
+    <!-- Topbar -->
+    <div class="admin-topbar">
+      <div class="admin-topbar-title" id="topbar-title">Dashboard</div>
+      <div class="admin-topbar-right">
+        <span>&#x1F44B; Welcome, <strong>Admin</strong></span>
+      </div>
+    </div>
+
+    <div class="admin-content">
+
+      <!-- ══════════ DASHBOARD PANEL ══════════ -->
+      <div class="admin-panel active" id="panel-dashboard">
+        <div class="stats-grid" id="dash-stats"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);">
+          <!-- Top viewed -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <span class="table-card-title">&#x1F525; Most Viewed</span>
+            </div>
+            <div id="top-viewed-list"></div>
+          </div>
+          <!-- Top saved -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <span class="table-card-title">&#x2665; Most Saved</span>
+            </div>
+            <div id="top-saved-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ RECIPES PANEL ══════════ -->
+      <div class="admin-panel" id="panel-recipes">
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">All Recipes</span>
+            <div style="display:flex;gap:var(--sp-3);align-items:center;flex-wrap:wrap;">
+              <div class="table-search">
+                <input type="text" id="recipe-search-input" placeholder="Search recipes..." oninput="renderRecipeTable()" />
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openRecipeModal()">
+                + Add Recipe
+              </button>
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="admin-table" id="recipes-table">
+              <thead>
+                <tr>
+                  <th>Recipe</th>
+                  <th>Category</th>
+                  <th>Difficulty</th>
+                  <th>Time</th>
+                  <th>Views</th>
+                  <th>Saves</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recipes-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ USERS PANEL ══════════ -->
+      <div class="admin-panel" id="panel-users">
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">All Users</span>
+            <div class="table-search">
+              <input type="text" id="user-search-input" placeholder="Search users..." oninput="renderUserTable()" />
+            </div>
+          </div>
+          <div style="overflow-x:auto;">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Email</th>
+                  <th>Joined</th>
+                  <th>Saved</th>
+                  <th>Completed</th>
+                  <th>Viewed</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══════════ REPORTS PANEL ══════════ -->
+      <div class="admin-panel" id="panel-reports">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6);">
+          <div class="table-card">
+            <div class="table-card-header">
+              <span class="table-card-title">&#x1F525; Top 5 Most Viewed</span>
+            </div>
+            <div id="report-viewed-list"></div>
+          </div>
+          <div class="table-card">
+            <div class="table-card-header">
+              <span class="table-card-title">&#x2665; Top 5 Most Saved</span>
+            </div>
+            <div id="report-saved-list"></div>
+          </div>
+        </div>
+        <div class="stats-grid" style="margin-top:var(--sp-6);" id="report-stats"></div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </div><!-- /admin-main -->
+</div><!-- /admin-layout -->
+
+<!-- ══════════ RECIPE MODAL ══════════ -->
+<div class="modal-backdrop" id="recipe-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modal-title">Add Recipe</h2>
+      <button class="modal-close" onclick="closeRecipeModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body" style="max-height:75vh;overflow-y:auto;">
+
+      <input type="hidden" id="edit-recipe-id" />
+
+      <!-- Basic info -->
+      <h4 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:var(--sp-4);">Basic Information</h4>
+      <div class="form-group">
+        <label class="form-label">Recipe Name *</label>
+        <input type="text" id="f-title" class="form-input" placeholder="e.g. Classic Banana Bread" />
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="f-category" class="form-select"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Difficulty *</label>
+          <select id="f-difficulty" class="form-select"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Image URL</label>
+        <input type="url" id="f-image" class="form-input" placeholder="https://example.com/image.jpg" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea id="f-description" class="form-textarea" rows="2" placeholder="Brief description of the recipe..."></textarea>
+      </div>
+
+      <!-- Timing -->
+      <div class="divider"></div>
+      <h4 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:var(--sp-4);">Timing &amp; Servings</h4>
+      <div class="form-grid-3">
+        <div class="form-group">
+          <label class="form-label">Prep Time (mins)</label>
+          <input type="number" id="f-prep" class="form-input" placeholder="20" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Bake Time (mins)</label>
+          <input type="number" id="f-bake" class="form-input" placeholder="35" min="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Servings</label>
+          <input type="number" id="f-servings" class="form-input" placeholder="8" min="1" />
+        </div>
+      </div>
+
+      <!-- Nutrition -->
+      <div class="divider"></div>
+      <h4 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:var(--sp-4);">Nutrition (per serving)</h4>
+      <div class="form-grid-3">
+        <div class="form-group"><label class="form-label">Calories</label><input type="text" id="f-cal" class="form-input" placeholder="320" /></div>
+        <div class="form-group"><label class="form-label">Protein</label><input type="text" id="f-protein" class="form-input" placeholder="5g" /></div>
+        <div class="form-group"><label class="form-label">Carbs</label><input type="text" id="f-carbs" class="form-input" placeholder="48g" /></div>
+        <div class="form-group"><label class="form-label">Fat</label><input type="text" id="f-fat" class="form-input" placeholder="12g" /></div>
+        <div class="form-group"><label class="form-label">Fiber</label><input type="text" id="f-fiber" class="form-input" placeholder="1g" /></div>
+        <div class="form-group"><label class="form-label">Sugar</label><input type="text" id="f-sugar" class="form-input" placeholder="28g" /></div>
+      </div>
+
+      <!-- Ingredients -->
+      <div class="divider"></div>
+      <h4 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:var(--sp-4);">Ingredients</h4>
+      <div id="ingredients-rows"></div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="addIngredientRow()">+ Add Ingredient</button>
+
+      <!-- Steps -->
+      <div class="divider"></div>
+      <h4 style="font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--gray-400);margin-bottom:var(--sp-4);">Steps</h4>
+      <div id="steps-rows"></div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="addStepRow()">+ Add Step</button>
+
+      <span class="form-error" id="modal-error" style="margin-top:var(--sp-4);display:block;"></span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeRecipeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRecipe()">Save Recipe</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ USER EDIT MODAL ══════════ -->
+<div class="modal-backdrop" id="user-modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit User</h2>
+      <button class="modal-close" onclick="closeUserModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="edit-username-orig" />
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" id="edit-username-val" class="form-input" />
+        <span class="form-error" id="user-edit-err"></span>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input type="email" id="edit-email-val" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Password <span style="color:var(--gray-400);font-weight:400;">(leave blank to keep)</span></label>
+        <input type="password" id="edit-pw-val" class="form-input" placeholder="Enter new password" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeUserModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveUser()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm modal -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h2 class="modal-title" id="confirm-title">Confirm Delete</h2>
+      <button class="modal-close" onclick="closeConfirmModal()">&#x2715;</button>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-message" style="font-size:.95rem;color:var(--gray-600);line-height:1.6;"></p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeConfirmModal()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-action-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/recipes.js"></script>
+<script>
+  /* ── INIT ── */
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData();
+    requireAdmin();
+    buildCategoryOptions('f-category', false);
+    buildDifficultyOptions('f-difficulty', false);
+    loadDashboard();
+  });
+
+  /* ── PANEL NAVIGATION ── */
+  function showPanel(name, btn) {
+    document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.admin-nav-link').forEach(l => l.classList.remove('active'));
+    document.getElementById(`panel-${name}`).classList.add('active');
+    btn.classList.add('active');
+
+    const titles = { dashboard:'Dashboard', recipes:'Recipe Management', users:'User Management', reports:'Reports' };
+    document.getElementById('topbar-title').textContent = titles[name] || name;
+
+    if (name === 'dashboard') loadDashboard();
+    if (name === 'recipes')   renderRecipeTable();
+    if (name === 'users')     renderUserTable();
+    if (name === 'reports')   loadReports();
+  }
+
+  /* ══════════════════════════════════════
+     DASHBOARD
+  ══════════════════════════════════════ */
+  function loadDashboard() {
+    const data = getReportData();
+
+    document.getElementById('dash-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-card-icon">&#x1F373;</div><div class="stat-card-label">Total Recipes</div><div class="stat-card-value">${data.totalRecipes}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x1F465;</div><div class="stat-card-label">Total Users</div><div class="stat-card-value">${data.totalUsers}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x2665;</div><div class="stat-card-label">Total Saves</div><div class="stat-card-value">${data.totalSaves}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x1F4C8;</div><div class="stat-card-label">Total Views</div><div class="stat-card-value">${getRecipes().reduce((s,r)=>s+(r.views||0),0)}</div></div>`;
+
+    document.getElementById('top-viewed-list').innerHTML =
+      renderMiniReport(data.topViewed, 'views');
+    document.getElementById('top-saved-list').innerHTML =
+      renderMiniReport(data.topSaved, 'saves');
+  }
+
+  function renderMiniReport(recipes, field) {
+    if (!recipes.length) return '<p style="padding:var(--sp-4);font-size:.875rem;color:var(--gray-400);">No data yet.</p>';
+    const max = recipes[0][field] || 1;
+    const medals = ['gold','silver','bronze','',''];
+    return recipes.map((r,i) => `
+      <div class="report-row">
+        <div class="report-rank ${medals[i]}">${i+1}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.875rem;font-weight:600;color:var(--gray-800);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.title}</div>
+          <div class="report-bar-wrap" style="margin-top:5px;">
+            <div class="report-bar" style="width:${Math.round(((r[field]||0)/max)*100)}%;"></div>
+          </div>
+        </div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--orange);min-width:36px;text-align:right;">${r[field]||0}</div>
+      </div>`).join('');
+  }
+
+  /* ══════════════════════════════════════
+     RECIPES TABLE
+  ══════════════════════════════════════ */
+  function renderRecipeTable() {
+    const query   = (document.getElementById('recipe-search-input')?.value || '').toLowerCase();
+    const recipes = getRecipes().filter(r =>
+      !query || r.title.toLowerCase().includes(query) || r.category.toLowerCase().includes(query));
+
+    const diffClass = (d) => ({ Beginner:'beginner', Intermediate:'intermediate', Advanced:'advanced' }[d]||'beginner');
+
+    document.getElementById('recipes-tbody').innerHTML = recipes.length
+      ? recipes.map(r => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--sp-3);">
+              <img class="table-img" src="${r.image||''}" alt="${r.title}" onerror="this.src='';this.style.background='var(--cream-dark)'">
+              <div>
+                <div style="font-weight:600;color:var(--brown-deep);">${r.title}</div>
+                <div style="font-size:.75rem;color:var(--gray-400);">${r.id}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-category">${r.category}</span></td>
+          <td><span class="badge badge-${diffClass(r.difficulty)}">${r.difficulty}</span></td>
+          <td style="white-space:nowrap;">${formatTime((r.prepTime||0)+(r.bakeTime||0))}</td>
+          <td>${r.views||0}</td>
+          <td>${r.saves||0}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-secondary btn-sm" onclick="openRecipeModal('${r.id}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteRecipe('${r.id}','${r.title.replace(/'/g,"\\'")}')">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('')
+      : `<tr><td colspan="7" style="text-align:center;padding:var(--sp-8);color:var(--gray-400);">No recipes found.</td></tr>`;
+  }
+
+  /* ══════════════════════════════════════
+     RECIPE MODAL
+  ══════════════════════════════════════ */
+  let ingredientCount = 0;
+  let stepCount       = 0;
+
+  function openRecipeModal(id = null) {
+    const modal = document.getElementById('recipe-modal');
+    ingredientCount = 0;
+    stepCount       = 0;
+    document.getElementById('ingredients-rows').innerHTML = '';
+    document.getElementById('steps-rows').innerHTML       = '';
+    document.getElementById('modal-error').textContent    = '';
+    document.getElementById('edit-recipe-id').value       = '';
+
+    if (id) {
+      const r = getRecipeById(id);
+      if (!r) return;
+      document.getElementById('modal-title').textContent = 'Edit Recipe';
+      document.getElementById('edit-recipe-id').value    = id;
+      document.getElementById('f-title').value           = r.title || '';
+      document.getElementById('f-category').value        = r.category || '';
+      document.getElementById('f-difficulty').value      = r.difficulty || '';
+      document.getElementById('f-image').value           = r.image || '';
+      document.getElementById('f-description').value     = r.description || '';
+      document.getElementById('f-prep').value            = r.prepTime || '';
+      document.getElementById('f-bake').value            = r.bakeTime || '';
+      document.getElementById('f-servings').value        = r.servings || '';
+      if (r.nutrition) {
+        document.getElementById('f-cal').value     = r.nutrition.calories || '';
+        document.getElementById('f-protein').value = r.nutrition.protein  || '';
+        document.getElementById('f-carbs').value   = r.nutrition.carbs    || '';
+        document.getElementById('f-fat').value     = r.nutrition.fat      || '';
+        document.getElementById('f-fiber').value   = r.nutrition.fiber    || '';
+        document.getElementById('f-sugar').value   = r.nutrition.sugar    || '';
+      }
+      (r.ingredients || []).forEach(ing => addIngredientRow(ing.name, ing.qty));
+      (r.steps       || []).forEach(s   => addStepRow(s.instruction, s.tip));
+    } else {
+      document.getElementById('modal-title').textContent = 'Add Recipe';
+      ['f-title','f-image','f-description','f-prep','f-bake','f-servings',
+       'f-cal','f-protein','f-carbs','f-fat','f-fiber','f-sugar'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      addIngredientRow(); addIngredientRow(); addIngredientRow();
+      addStepRow(); addStepRow();
+    }
+
+    modal.classList.add('open');
+  }
+
+  function closeRecipeModal() {
+    document.getElementById('recipe-modal').classList.remove('open');
+  }
+
+  function addIngredientRow(name = '', qty = '') {
+    ingredientCount++;
+    const n = ingredientCount;
+    const div = document.createElement('div');
+    div.className = 'dynamic-row';
+    div.id = `ing-row-${n}`;
+    div.innerHTML = `
+      <div style="flex:1;">
+        <input type="text" class="form-input" id="ing-name-${n}" placeholder="Ingredient name" value="${name}" style="margin-bottom:var(--sp-2);" />
+        <input type="text" class="form-input" id="ing-qty-${n}"  placeholder="Quantity (e.g. 2 cups)" value="${qty}" />
+      </div>
+      <button type="button" class="remove-row-btn" onclick="document.getElementById('ing-row-${n}').remove()">&#x2715;</button>`;
+    document.getElementById('ingredients-rows').appendChild(div);
+  }
+
+  function addStepRow(instruction = '', tip = '') {
+    stepCount++;
+    const n = stepCount;
+    const div = document.createElement('div');
+    div.className = 'dynamic-row';
+    div.id = `step-row-${n}`;
+    div.innerHTML = `
+      <div class="dynamic-row-num">${n}</div>
+      <div style="flex:1;">
+        <textarea class="form-textarea" id="step-inst-${n}" placeholder="Step instruction..." rows="2" style="margin-bottom:var(--sp-2);">${instruction}</textarea>
+        <input type="text" class="form-input" id="step-tip-${n}" placeholder="Helpful tip (optional)" value="${tip}" />
+      </div>
+      <button type="button" class="remove-row-btn" onclick="document.getElementById('step-row-${n}').remove()">&#x2715;</button>`;
+    document.getElementById('steps-rows').appendChild(div);
+  }
+
+  function saveRecipe() {
+    const errEl = document.getElementById('modal-error');
+    errEl.textContent = '';
+
+    const title      = document.getElementById('f-title').value.trim();
+    const category   = document.getElementById('f-category').value;
+    const difficulty = document.getElementById('f-difficulty').value;
+    if (!title)      { errEl.textContent = 'Recipe name is required.'; return; }
+    if (!category)   { errEl.textContent = 'Please select a category.'; return; }
+    if (!difficulty) { errEl.textContent = 'Please select a difficulty.'; return; }
+
+    /* Collect ingredients */
+    const ingredients = [];
+    document.querySelectorAll('[id^="ing-row-"]').forEach(row => {
+      const n    = row.id.split('-')[2];
+      const name = document.getElementById(`ing-name-${n}`)?.value.trim();
+      const qty  = document.getElementById(`ing-qty-${n}`)?.value.trim();
+      if (name) ingredients.push({ name, qty: qty || '' });
+    });
+
+    /* Collect steps */
+    const steps = [];
+    document.querySelectorAll('[id^="step-row-"]').forEach(row => {
+      const n    = row.id.split('-')[2];
+      const inst = document.getElementById(`step-inst-${n}`)?.value.trim();
+      const tip  = document.getElementById(`step-tip-${n}`)?.value.trim();
+      if (inst) steps.push({ instruction: inst, tip: tip || '' });
+    });
+
+    if (!ingredients.length) { errEl.textContent = 'Add at least one ingredient.'; return; }
+    if (!steps.length)        { errEl.textContent = 'Add at least one step.'; return; }
+
+    const data = {
+      title, category, difficulty,
+      image:       document.getElementById('f-image').value.trim(),
+      description: document.getElementById('f-description').value.trim(),
+      prepTime:    parseInt(document.getElementById('f-prep').value) || 0,
+      bakeTime:    parseInt(document.getElementById('f-bake').value) || 0,
+      servings:    parseInt(document.getElementById('f-servings').value) || 1,
+      nutrition: {
+        calories: document.getElementById('f-cal').value.trim(),
+        protein:  document.getElementById('f-protein').value.trim(),
+        carbs:    document.getElementById('f-carbs').value.trim(),
+        fat:      document.getElementById('f-fat').value.trim(),
+        fiber:    document.getElementById('f-fiber').value.trim(),
+        sugar:    document.getElementById('f-sugar').value.trim(),
+      },
+      ingredients, steps,
+    };
+
+    const editId = document.getElementById('edit-recipe-id').value;
+    if (editId) {
+      updateRecipe(editId, data);
+      showToast('Recipe updated successfully!');
+    } else {
+      createRecipe(data);
+      showToast('New recipe created!');
+    }
+
+    closeRecipeModal();
+    renderRecipeTable();
+  }
+
+  /* ══════════════════════════════════════
+     USERS TABLE
+  ══════════════════════════════════════ */
+  function renderUserTable() {
+    const query = (document.getElementById('user-search-input')?.value || '').toLowerCase();
+    const users = getUsers().filter(u =>
+      !query ||
+      u.username.toLowerCase().includes(query) ||
+      (u.email || '').toLowerCase().includes(query));
+
+    document.getElementById('users-tbody').innerHTML = users.length
+      ? users.map(u => `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:var(--sp-3);">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--brown);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;font-family:var(--font-display);flex-shrink:0;">${getInitials(u.username)}</div>
+              <span style="font-weight:600;color:var(--brown-deep);">${u.username}</span>
+            </div>
+          </td>
+          <td style="color:var(--gray-600);">${u.email || '—'}</td>
+          <td style="white-space:nowrap;">${formatDate(u.joinDate)}</td>
+          <td>${getSaved(u.username).length}</td>
+          <td>${getCompleted(u.username).length}</td>
+          <td>${getViewed(u.username).length}</td>
+          <td>
+            <div class="action-btns">
+              <button class="btn btn-secondary btn-sm" onclick="openUserModal('${u.username}')">Edit</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDeleteUser('${u.username}')">Delete</button>
+            </div>
+          </td>
+        </tr>`).join('')
+      : `<tr><td colspan="7" style="text-align:center;padding:var(--sp-8);color:var(--gray-400);">No users found.</td></tr>`;
+  }
+
+  /* ══════════════════════════════════════
+     USER MODAL
+  ══════════════════════════════════════ */
+  function openUserModal(username) {
+    const u = getUserByUsername(username);
+    if (!u) return;
+    document.getElementById('edit-username-orig').value = u.username;
+    document.getElementById('edit-username-val').value  = u.username;
+    document.getElementById('edit-email-val').value     = u.email || '';
+    document.getElementById('edit-pw-val').value        = '';
+    document.getElementById('user-edit-err').textContent = '';
+    document.getElementById('user-edit-err').classList.remove('visible');
+    document.getElementById('user-modal').classList.add('open');
+  }
+
+  function closeUserModal() {
+    document.getElementById('user-modal').classList.remove('open');
+  }
+
+  function saveUser() {
+    const orig    = document.getElementById('edit-username-orig').value;
+    const newName = document.getElementById('edit-username-val').value.trim();
+    const email   = document.getElementById('edit-email-val').value.trim();
+    const pw      = document.getElementById('edit-pw-val').value;
+    const errEl   = document.getElementById('user-edit-err');
+
+    errEl.textContent = ''; errEl.classList.remove('visible');
+
+    if (!newName || newName.length < 3) {
+      errEl.textContent = 'Username must be at least 3 characters.';
+      errEl.classList.add('visible'); return;
+    }
+
+    if (newName.toLowerCase() !== orig.toLowerCase()) {
+      const existing = getUserByUsername(newName);
+      if (existing) {
+        errEl.textContent = 'Username already taken.';
+        errEl.classList.add('visible'); return;
+      }
+    }
+
+    const updates = { username: newName, email };
+    if (pw && pw.length >= 6) updates.password = pw;
+    else if (pw && pw.length < 6) {
+      errEl.textContent = 'New password must be at least 6 characters.';
+      errEl.classList.add('visible'); return;
+    }
+
+    updateUser(orig, updates);
+    closeUserModal();
+    renderUserTable();
+    showToast('User updated successfully!');
+  }
+
+  /* ══════════════════════════════════════
+     DELETE CONFIRMS
+  ══════════════════════════════════════ */
+  function confirmDeleteRecipe(id, title) {
+    document.getElementById('confirm-title').textContent   = 'Delete Recipe';
+    document.getElementById('confirm-message').textContent =
+      `Are you sure you want to delete "${title}"? This cannot be undone.`;
+    document.getElementById('confirm-action-btn').onclick  = () => {
+      deleteRecipe(id);
+      closeConfirmModal();
+      renderRecipeTable();
+      showToast('Recipe deleted.');
+    };
+    document.getElementById('confirm-modal').classList.add('open');
+  }
+
+  function confirmDeleteUser(username) {
+    document.getElementById('confirm-title').textContent   = 'Delete User';
+    document.getElementById('confirm-message').textContent =
+      `Are you sure you want to delete user "${username}"? All their data will be permanently removed.`;
+    document.getElementById('confirm-action-btn').onclick  = () => {
+      deleteUser(username);
+      closeConfirmModal();
+      renderUserTable();
+      showToast('User deleted.');
+    };
+    document.getElementById('confirm-modal').classList.add('open');
+  }
+
+  function closeConfirmModal() {
+    document.getElementById('confirm-modal').classList.remove('open');
+  }
+
+  /* Close modals on backdrop click */
+  ['recipe-modal','user-modal','confirm-modal'].forEach(id => {
+    document.getElementById(id).addEventListener('click', function(e) {
+      if (e.target === this) this.classList.remove('open');
+    });
+  });
+
+  /* ══════════════════════════════════════
+     REPORTS
+  ══════════════════════════════════════ */
+  function loadReports() {
+    const data = getReportData();
+
+    document.getElementById('report-viewed-list').innerHTML =
+      renderMiniReport(data.topViewed, 'views');
+    document.getElementById('report-saved-list').innerHTML =
+      renderMiniReport(data.topSaved,  'saves');
+
+    const totalViews = getRecipes().reduce((s,r) => s+(r.views||0), 0);
+    document.getElementById('report-stats').innerHTML = `
+      <div class="stat-card"><div class="stat-card-icon">&#x1F4D6;</div><div class="stat-card-label">Total Recipes</div><div class="stat-card-value">${data.totalRecipes}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x1F465;</div><div class="stat-card-label">Registered Users</div><div class="stat-card-value">${data.totalUsers}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x2665;</div><div class="stat-card-label">Total Saves</div><div class="stat-card-value">${data.totalSaves}</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#x1F440;</div><div class="stat-card-label">Total Views</div><div class="stat-card-value">${totalViews}</div></div>`;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recently Viewed — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .nav-avatar{width:32px;height:32px;border-radius:var(--r-full);background:var(--brown);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;font-family:var(--font-display);flex-shrink:0;border:2px solid var(--orange-pale);}
+    .viewed-timestamp{font-size:.72rem;color:var(--gray-400);font-weight:600;margin-top:var(--sp-1);}
+  </style>
+</head>
+<body class="page-wrapper">
+  <nav class="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="navbar-logo-icon">🧁</div>
+        <div><span class="navbar-brand-text">Pantry-to-Oven</span><span class="navbar-brand-sub">Smart Baking System</span></div>
+      </a>
+      <ul class="navbar-nav" id="main-nav">
+        <li><a href="home.html"            class="nav-link">Home</a></li>
+        <li><a href="search.html"          class="nav-link">&#x1F50D; Ingredient Search</a></li>
+        <li><a href="saved.html"           class="nav-link">&#x2665; Saved</a></li>
+        <li><a href="recently-viewed.html" class="nav-link active">&#x1F552; Recent</a></li>
+        <li><a href="profile.html"         class="nav-link">Profile</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <div class="nav-avatar" id="nav-avatar">?</div>
+          <span class="text-sm font-semi" id="nav-username" style="color:var(--brown-deep);"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="nav-logout">Sign out</button>
+        <button class="navbar-toggle" id="navbar-toggle">&#9776;</button>
+      </div>
+    </div>
+  </nav>
+
+  <div style="background:linear-gradient(135deg,var(--cream-dark),var(--orange-pale));border-bottom:1px solid var(--cream-border);padding:var(--sp-10) 0 var(--sp-8);text-align:center;">
+    <div class="container">
+      <h1 class="page-hero-title">&#x1F552; Recently Viewed</h1>
+      <p class="page-hero-subtitle">Recipes you've opened recently — up to the last 20.</p>
+    </div>
+  </div>
+
+  <main class="page-content">
+    <div class="container">
+      <div id="viewed-grid" class="recipes-grid stagger"></div>
+    </div>
+  </main>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/recipes.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData(); requireAuth(); initNavbar();
+    const user    = getCurrentUser();
+    const recipes = getRecentlyViewedRecipes(user.username);
+    renderRecipeGrid('viewed-grid', recipes, {
+      emptyTitle:  'Nothing viewed yet',
+      emptyText:   'Recipes you open will appear here automatically.',
+      emptyAction: '<a href="home.html" class="btn btn-primary">Browse Recipes</a>',
+    });
+  });
+</script>
+</body>
+</html>

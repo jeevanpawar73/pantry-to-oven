@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .nav-avatar{width:32px;height:32px;border-radius:var(--r-full);background:var(--brown);color:var(--white);display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;font-family:var(--font-display);flex-shrink:0;border:2px solid var(--orange-pale);}
+    .profile-layout{display:grid;grid-template-columns:300px 1fr;gap:var(--sp-8);align-items:start;}
+    .profile-card{background:var(--white);border-radius:var(--r-xl);border:1px solid var(--cream-border);box-shadow:var(--shadow-card);overflow:hidden;}
+    .profile-card-top{background:linear-gradient(135deg,var(--cream-dark),var(--orange-pale));padding:var(--sp-8) var(--sp-6);text-align:center;border-bottom:1px solid var(--cream-border);}
+    .big-avatar{width:88px;height:88px;border-radius:var(--r-full);background:var(--brown);color:var(--white);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:2.2rem;font-weight:700;margin:0 auto var(--sp-4);border:4px solid var(--white);box-shadow:var(--shadow-sm);}
+    .profile-name{font-family:var(--font-display);font-size:1.3rem;color:var(--brown-deep);margin-bottom:4px;}
+    .profile-email{font-size:.82rem;color:var(--gray-400);}
+    .profile-join{font-size:.75rem;color:var(--gray-400);margin-top:var(--sp-2);}
+    .stat-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--cream-border);}
+    .stat-mini{background:var(--white);padding:var(--sp-4);text-align:center;}
+    .stat-mini-val{font-family:var(--font-display);font-size:1.4rem;font-weight:700;color:var(--brown-deep);display:block;}
+    .stat-mini-lbl{font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;color:var(--gray-400);font-weight:700;}
+    .profile-section{background:var(--white);border-radius:var(--r-lg);border:1px solid var(--cream-border);box-shadow:var(--shadow-xs);overflow:hidden;margin-bottom:var(--sp-5);}
+    .profile-section-header{padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--cream-border);background:var(--cream);display:flex;align-items:center;gap:var(--sp-2);}
+    .profile-section-title{font-family:var(--font-display);font-size:1rem;color:var(--brown-deep);}
+    .profile-section-body{padding:var(--sp-6);}
+    .danger-zone{border-color:rgba(192,57,43,.25);}
+    .danger-zone .profile-section-header{background:var(--error-bg);}
+    .danger-zone .profile-section-title{color:var(--error);}
+    @media(max-width:800px){.profile-layout{grid-template-columns:1fr;}.profile-card{max-width:400px;margin-inline:auto;}}
+  </style>
+</head>
+<body class="page-wrapper">
+  <nav class="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="navbar-logo-icon">🧁</div>
+        <div><span class="navbar-brand-text">Pantry-to-Oven</span><span class="navbar-brand-sub">Smart Baking System</span></div>
+      </a>
+      <ul class="navbar-nav" id="main-nav">
+        <li><a href="home.html"            class="nav-link">Home</a></li>
+        <li><a href="search.html"          class="nav-link">&#x1F50D; Ingredient Search</a></li>
+        <li><a href="saved.html"           class="nav-link">&#x2665; Saved</a></li>
+        <li><a href="recently-viewed.html" class="nav-link">&#x1F552; Recent</a></li>
+        <li><a href="profile.html"         class="nav-link active">Profile</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <div class="nav-avatar" id="nav-avatar">?</div>
+          <span class="text-sm font-semi" id="nav-username" style="color:var(--brown-deep);"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="nav-logout">Sign out</button>
+        <button class="navbar-toggle" id="navbar-toggle">&#9776;</button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-content">
+    <div class="container">
+      <h2 class="section-title" style="margin-bottom:var(--sp-6);">My Profile</h2>
+      <div class="profile-layout">
+
+        <!-- Left card -->
+        <div>
+          <div class="profile-card">
+            <div class="profile-card-top">
+              <div class="big-avatar" id="profile-avatar">?</div>
+              <div class="profile-name"  id="profile-name">—</div>
+              <div class="profile-email" id="profile-email">—</div>
+              <div class="profile-join"  id="profile-join">—</div>
+            </div>
+            <div class="stat-mini-grid">
+              <div class="stat-mini"><span class="stat-mini-val" id="s-saved">0</span><span class="stat-mini-lbl">Saved</span></div>
+              <div class="stat-mini"><span class="stat-mini-val" id="s-completed">0</span><span class="stat-mini-lbl">Made</span></div>
+              <div class="stat-mini"><span class="stat-mini-val" id="s-viewed">0</span><span class="stat-mini-lbl">Viewed</span></div>
+            </div>
+            <div style="padding:var(--sp-4) var(--sp-5);">
+              <button class="btn btn-danger btn-full" onclick="handleLogout()">Sign Out</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: edit forms -->
+        <div>
+          <!-- Edit username -->
+          <div class="profile-section">
+            <div class="profile-section-header">
+              <span>&#x270F;&#xFE0F;</span>
+              <h3 class="profile-section-title">Edit Username</h3>
+            </div>
+            <div class="profile-section-body">
+              <div class="form-group">
+                <label class="form-label">New Username</label>
+                <input type="text" id="new-username" class="form-input" placeholder="Enter new username" minlength="3" />
+                <span class="form-error" id="username-err"></span>
+              </div>
+              <button class="btn btn-primary" onclick="saveUsername()">Save Username</button>
+            </div>
+          </div>
+
+          <!-- Change password -->
+          <div class="profile-section">
+            <div class="profile-section-header">
+              <span>&#x1F512;</span>
+              <h3 class="profile-section-title">Change Password</h3>
+            </div>
+            <div class="profile-section-body">
+              <div class="form-group">
+                <label class="form-label">Current Password</label>
+                <input type="password" id="current-pw" class="form-input" placeholder="Your current password" />
+                <span class="form-error" id="current-pw-err"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">New Password</label>
+                <input type="password" id="new-pw" class="form-input" placeholder="At least 6 characters" />
+                <span class="form-error" id="new-pw-err"></span>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Confirm New Password</label>
+                <input type="password" id="confirm-pw" class="form-input" placeholder="Re-enter new password" />
+                <span class="form-error" id="confirm-pw-err"></span>
+              </div>
+              <button class="btn btn-primary" onclick="savePassword()">Update Password</button>
+            </div>
+          </div>
+
+          <!-- Danger zone -->
+          <div class="profile-section danger-zone">
+            <div class="profile-section-header">
+              <span>&#x26A0;&#xFE0F;</span>
+              <h3 class="profile-section-title">Danger Zone</h3>
+            </div>
+            <div class="profile-section-body">
+              <p style="font-size:.875rem;color:var(--gray-600);margin-bottom:var(--sp-4);line-height:1.6;">
+                Deleting your account permanently removes all your saved recipes, history, and profile data. This cannot be undone.
+              </p>
+              <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete My Account</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let user = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData(); requireAuth(); initNavbar();
+    user = getCurrentUser();
+    loadProfile();
+  });
+
+  function loadProfile() {
+    document.getElementById('profile-avatar').textContent = getInitials(user.username);
+    document.getElementById('profile-name').textContent   = user.username;
+    document.getElementById('profile-email').textContent  = user.email || '—';
+    document.getElementById('profile-join').textContent   =
+      user.joinDate ? 'Joined ' + formatDate(user.joinDate) : '';
+    document.getElementById('new-username').value         = user.username;
+
+    document.getElementById('s-saved').textContent     = getSaved(user.username).length;
+    document.getElementById('s-completed').textContent = getCompleted(user.username).length;
+    document.getElementById('s-viewed').textContent    = getViewed(user.username).length;
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(el => {
+      el.textContent = ''; el.classList.remove('visible');
+    });
+  }
+
+  function showErr(id, msg) {
+    const el = document.getElementById(id);
+    if (el) { el.textContent = msg; el.classList.add('visible'); }
+  }
+
+  function saveUsername() {
+    clearErrors();
+    const newName = document.getElementById('new-username').value.trim();
+    if (!newName || newName.length < 3) { showErr('username-err', 'Must be at least 3 characters.'); return; }
+    if (newName.toLowerCase() === 'admin') { showErr('username-err', 'That username is reserved.'); return; }
+    if (newName.toLowerCase() !== user.username.toLowerCase()) {
+      const existing = getUserByUsername(newName);
+      if (existing) { showErr('username-err', 'Username already taken.'); return; }
+    }
+    updateUser(user.username, { username: newName });
+    user = getCurrentUser();
+    loadProfile();
+    showToast('Username updated successfully!');
+  }
+
+  function savePassword() {
+    clearErrors();
+    const current  = document.getElementById('current-pw').value;
+    const newPw    = document.getElementById('new-pw').value;
+    const confirmPw = document.getElementById('confirm-pw').value;
+    let valid = true;
+
+    const fullUser = getUserByUsername(user.username);
+    if (!current) { showErr('current-pw-err', 'Enter your current password.'); valid = false; }
+    else if (fullUser && fullUser.password !== current) { showErr('current-pw-err', 'Incorrect current password.'); valid = false; }
+    if (!newPw || newPw.length < 6) { showErr('new-pw-err', 'At least 6 characters.'); valid = false; }
+    if (newPw !== confirmPw) { showErr('confirm-pw-err', 'Passwords do not match.'); valid = false; }
+    if (!valid) return;
+
+    updateUser(user.username, { password: newPw });
+    document.getElementById('current-pw').value = '';
+    document.getElementById('new-pw').value     = '';
+    document.getElementById('confirm-pw').value = '';
+    showToast('Password updated successfully!');
+  }
+
+  function confirmDeleteAccount() {
+    if (!confirm('Are you sure you want to delete your account? This cannot be undone.')) return;
+    const username = user.username;
+    clearSession();
+    deleteUser(username);
+    window.location.href = 'login.html';
+  }
+</script>
+</body>
+</html>

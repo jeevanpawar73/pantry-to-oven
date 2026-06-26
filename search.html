@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search by Ingredients — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .search-hero {
+      background: linear-gradient(140deg, var(--cream-dark) 0%, var(--orange-pale) 100%);
+      border-bottom: 1px solid var(--cream-border);
+      padding: var(--sp-10) 0 var(--sp-8);
+      text-align: center;
+    }
+
+    .search-hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--brown-deep);
+      margin-bottom: var(--sp-3);
+    }
+
+    .search-hero-sub {
+      font-size: 1rem;
+      color: var(--gray-600);
+      max-width: 480px;
+      margin-inline: auto;
+      margin-bottom: var(--sp-6);
+      line-height: 1.65;
+    }
+
+    /* Ingredient input panel */
+    .ingredient-panel {
+      background: var(--white);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-md);
+      padding: var(--sp-6);
+      max-width: 660px;
+      margin-inline: auto;
+    }
+
+    .ingredient-input-row {
+      display: flex;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-4);
+    }
+
+    .ingredient-input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    .ingredient-input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      font-size: 0.95rem;
+      color: var(--gray-800);
+      background: var(--white);
+      outline: none;
+      transition: border-color var(--t-fast) var(--ease), box-shadow var(--t-fast) var(--ease);
+    }
+
+    .ingredient-input:focus {
+      border-color: var(--orange);
+      box-shadow: 0 0 0 3px rgba(232,116,58,0.14);
+    }
+
+    .ingredient-input-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: var(--gray-400);
+      pointer-events: none;
+    }
+
+    /* Autocomplete */
+    .autocomplete-dropdown {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: var(--white);
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      box-shadow: var(--shadow-md);
+      z-index: 50;
+      max-height: 200px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .autocomplete-dropdown.open { display: block; }
+
+    .autocomplete-item {
+      padding: var(--sp-3) var(--sp-4);
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--gray-100);
+      transition: background var(--t-fast) var(--ease);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .autocomplete-item:last-child  { border-bottom: none; }
+    .autocomplete-item:hover       { background: var(--orange-pale); color: var(--brown); }
+
+    .autocomplete-item-icon { color: var(--orange); font-size: 0.8rem; }
+
+    /* Tags area */
+    .tags-area {
+      min-height: 52px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-2);
+      padding: var(--sp-3);
+      border: 1.5px dashed var(--cream-border);
+      border-radius: var(--r-md);
+      background: var(--gray-50);
+      margin-bottom: var(--sp-4);
+      transition: border-color var(--t-fast) var(--ease),
+                  background  var(--t-fast) var(--ease);
+      align-items: center;
+    }
+
+    .tags-area.has-tags {
+      border-style: solid;
+      border-color: var(--brown-light);
+      background: var(--white);
+    }
+
+    .tags-placeholder {
+      font-size: 0.875rem;
+      color: var(--gray-400);
+      pointer-events: none;
+    }
+
+    .ing-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--orange-pale);
+      color: var(--brown);
+      border: 1px solid var(--brown-light);
+      border-radius: var(--r-full);
+      padding: 5px 12px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      animation: fadeInUp 0.2s var(--ease) both;
+    }
+
+    .ing-tag-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--brown-light);
+      font-size: 0.85rem;
+      line-height: 1;
+      padding: 0;
+      margin-left: 2px;
+      transition: color var(--t-fast) var(--ease);
+    }
+
+    .ing-tag-remove:hover { color: var(--error); }
+
+    /* Panel footer */
+    .panel-footer {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .panel-hint {
+      font-size: 0.8rem;
+      color: var(--gray-400);
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: var(--sp-2);
+    }
+
+    /* Suggestions chips */
+    .suggestions-row {
+      margin-top: var(--sp-4);
+      padding-top: var(--sp-4);
+      border-top: 1px solid var(--cream-border);
+    }
+
+    .suggestions-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: var(--sp-2);
+      display: block;
+    }
+
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-2);
+    }
+
+    .suggestion-chip {
+      padding: 4px 12px;
+      border-radius: var(--r-full);
+      border: 1px solid var(--cream-border);
+      background: var(--white);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .suggestion-chip:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-pale);
+    }
+
+    /* Results section */
+    .results-section {
+      padding: var(--sp-8) 0 var(--sp-16);
+    }
+
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-5);
+      flex-wrap: wrap;
+      gap: var(--sp-3);
+    }
+
+    .results-header-title {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      color: var(--brown-deep);
+    }
+
+    .results-count-badge {
+      background: var(--orange-pale);
+      color: var(--orange);
+      border: 1px solid rgba(232,116,58,0.3);
+      border-radius: var(--r-full);
+      font-size: 0.82rem;
+      font-weight: 700;
+      padding: 4px 14px;
+    }
+
+    /* Filter bar for results */
+    .results-filter-bar {
+      display: flex;
+      gap: var(--sp-3);
+      margin-bottom: var(--sp-5);
+      flex-wrap: wrap;
+    }
+
+    .results-filter-bar .form-select {
+      width: auto;
+      min-width: 140px;
+      font-size: 0.875rem;
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+
+    /* How it works strip */
+    .how-it-works {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--sp-4);
+      max-width: 660px;
+      margin: var(--sp-6) auto 0;
+    }
+
+    .how-step {
+      text-align: center;
+      padding: var(--sp-4);
+    }
+
+    .how-step-num {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-full);
+      background: var(--orange-pale);
+      color: var(--orange);
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto var(--sp-3);
+      font-family: var(--font-display);
+    }
+
+    .how-step-text {
+      font-size: 0.82rem;
+      color: var(--gray-600);
+      line-height: 1.5;
+    }
+
+    /* Empty / initial state */
+    .initial-state {
+      text-align: center;
+      padding: var(--sp-10) var(--sp-6);
+      color: var(--gray-400);
+    }
+
+    @media (max-width: 640px) {
+      .how-it-works { grid-template-columns: 1fr; }
+      .ingredient-input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="navbar-logo-icon">🧁</div>
+        <div>
+          <span class="navbar-brand-text">Pantry-to-Oven</span>
+          <span class="navbar-brand-sub">Smart Baking System</span>
+        </div>
+      </a>
+      <ul class="navbar-nav" id="main-nav">
+        <li><a href="home.html"            class="nav-link">Home</a></li>
+        <li><a href="search.html"          class="nav-link active">&#x1F50D; Ingredient Search</a></li>
+        <li><a href="saved.html"           class="nav-link">&#x2665; Saved</a></li>
+        <li><a href="recently-viewed.html" class="nav-link">&#x1F552; Recent</a></li>
+        <li><a href="profile.html"         class="nav-link">Profile</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <div class="nav-avatar" id="nav-avatar">?</div>
+          <span class="text-sm font-semi" id="nav-username" style="color:var(--brown-deep);"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="nav-logout">Sign out</button>
+        <button class="navbar-toggle" id="navbar-toggle">&#9776;</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="search-hero">
+    <div class="container">
+      <h1 class="search-hero-title">&#x1F50D; Search by Ingredients</h1>
+      <p class="search-hero-sub">
+        Tell us what's in your pantry and we'll find the best matching recipes —
+        ranked by how many ingredients you already have.
+      </p>
+
+      <!-- Input panel -->
+      <div class="ingredient-panel">
+
+        <!-- Input row -->
+        <div class="ingredient-input-row">
+          <div class="ingredient-input-wrapper autocomplete-wrapper">
+            <span class="ingredient-input-icon">&#x1F9C2;</span>
+            <input
+              type="text"
+              id="ingredient-input"
+              class="ingredient-input"
+              placeholder="Type an ingredient name (e.g. eggs, flour...)"
+              autocomplete="off"
+              autocapitalize="none"
+            />
+            <div class="autocomplete-dropdown" id="autocomplete-list"></div>
+          </div>
+          <button class="btn btn-primary" onclick="addCurrentIngredient()">
+            + Add
+          </button>
+        </div>
+
+        <!-- Tags area -->
+        <div class="tags-area" id="tags-area">
+          <span class="tags-placeholder" id="tags-placeholder">
+            Your ingredients will appear here...
+          </span>
+        </div>
+
+        <!-- Panel footer -->
+        <div class="panel-footer">
+          <span class="panel-hint" id="tag-count-hint">0 ingredients added</span>
+          <div class="panel-actions">
+            <button class="btn btn-ghost btn-sm" onclick="clearAllIngredients()">
+              Clear All
+            </button>
+            <button class="btn btn-primary" onclick="runSearch()" id="search-btn" disabled>
+              &#x1F50D; Find Recipes
+            </button>
+          </div>
+        </div>
+
+        <!-- Common ingredient suggestions -->
+        <div class="suggestions-row">
+          <span class="suggestions-label">Common baking ingredients</span>
+          <div class="suggestion-chips" id="suggestion-chips">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- How it works -->
+      <div class="how-it-works">
+        <div class="how-step">
+          <div class="how-step-num">1</div>
+          <p class="how-step-text">Add the ingredients you have in your pantry</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">2</div>
+          <p class="how-step-text">We match them against every recipe's ingredient list</p>
+        </div>
+        <div class="how-step">
+          <div class="how-step-num">3</div>
+          <p class="how-step-text">Results ranked by match % with missing ingredients shown</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <main class="page-content-full">
+    <div class="results-section" id="results-section" style="display:none;">
+      <div class="container">
+        <div class="results-header">
+          <div>
+            <h2 class="results-header-title">Results</h2>
+            <p style="font-size:0.875rem;color:var(--gray-400);margin-top:3px;" id="results-subtitle"></p>
+          </div>
+          <span class="results-count-badge" id="results-count-badge">0 recipes</span>
+        </div>
+
+        <!-- Result filters -->
+        <div class="results-filter-bar">
+          <select class="form-select" id="res-filter-category" onchange="applyResultFilters()">
+          </select>
+          <select class="form-select" id="res-filter-difficulty" onchange="applyResultFilters()">
+          </select>
+          <select class="form-select" id="res-sort" onchange="applyResultFilters()">
+            <option value="match">Sort: Best Match</option>
+            <option value="time-asc">Time: Shortest</option>
+            <option value="name-asc">Name: A–Z</option>
+          </select>
+        </div>
+
+        <div class="recipes-grid stagger" id="results-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Initial state (before search) -->
+    <div class="initial-state" id="initial-state">
+      <div style="font-size:3rem;margin-bottom:var(--sp-4);">&#x1F9C1;</div>
+      <p style="font-size:1rem;color:var(--gray-600);">Add some ingredients above to get started!</p>
+    </div>
+  </main>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/recipes.js"></script>
+<script>
+  let userIngredients = [];  /* current tag list */
+  let allMatched      = [];  /* full match results */
+  let allIngNames     = [];  /* for autocomplete */
+
+  const COMMON_INGREDIENTS = [
+    'flour', 'sugar', 'butter', 'eggs', 'milk', 'vanilla extract',
+    'baking powder', 'baking soda', 'salt', 'chocolate chips',
+    'cocoa powder', 'heavy cream', 'brown sugar', 'lemon juice',
+  ];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData();
+    requireAuth();
+    initNavbar();
+
+    allIngNames = getAllIngredientNames();
+
+    buildCategoryOptions('res-filter-category');
+    buildDifficultyOptions('res-filter-difficulty');
+    buildSuggestionChips();
+    initAutocomplete();
+  });
+
+  /* ── SUGGESTION CHIPS ── */
+  function buildSuggestionChips() {
+    const container = document.getElementById('suggestion-chips');
+    container.innerHTML = COMMON_INGREDIENTS.map(ing => `
+      <button class="suggestion-chip" onclick="addIngredient('${ing}')">
+        + ${ing}
+      </button>`).join('');
+  }
+
+  /* ── AUTOCOMPLETE ── */
+  function initAutocomplete() {
+    const input    = document.getElementById('ingredient-input');
+    const dropdown = document.getElementById('autocomplete-list');
+
+    input.addEventListener('input', () => {
+      const val = input.value.trim().toLowerCase();
+      if (val.length < 2) { dropdown.classList.remove('open'); return; }
+
+      const matches = allIngNames
+        .filter(n => n.toLowerCase().includes(val) && !userIngredients.includes(n.toLowerCase()))
+        .slice(0, 8);
+
+      if (!matches.length) { dropdown.classList.remove('open'); return; }
+
+      dropdown.innerHTML = matches.map(m => `
+        <div class="autocomplete-item" onclick="addIngredient('${m}')">
+          <span class="autocomplete-item-icon">+</span> ${m}
+        </div>`).join('');
+
+      dropdown.classList.add('open');
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); addCurrentIngredient(); }
+      if (e.key === 'Escape') dropdown.classList.remove('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.autocomplete-wrapper')) {
+        dropdown.classList.remove('open');
+      }
+    });
+  }
+
+  /* ── ADD / REMOVE INGREDIENTS ── */
+  function addCurrentIngredient() {
+    const input = document.getElementById('ingredient-input');
+    const val   = input.value.trim();
+    if (val) { addIngredient(val); input.value = ''; }
+    document.getElementById('autocomplete-list').classList.remove('open');
+  }
+
+  function addIngredient(name) {
+    const normalised = name.trim().toLowerCase();
+    if (!normalised || userIngredients.includes(normalised)) return;
+    userIngredients.push(normalised);
+    renderTags();
+    document.getElementById('ingredient-input').value = '';
+    document.getElementById('autocomplete-list').classList.remove('open');
+  }
+
+  function removeIngredient(name) {
+    userIngredients = userIngredients.filter(i => i !== name);
+    renderTags();
+  }
+
+  function clearAllIngredients() {
+    userIngredients = [];
+    renderTags();
+    hideResults();
+  }
+
+  /* ── RENDER TAGS ── */
+  function renderTags() {
+    const area        = document.getElementById('tags-area');
+    const placeholder = document.getElementById('tags-placeholder');
+    const hint        = document.getElementById('tag-count-hint');
+    const searchBtn   = document.getElementById('search-btn');
+    const count       = userIngredients.length;
+
+    placeholder.style.display = count ? 'none' : 'block';
+    area.classList.toggle('has-tags', count > 0);
+    hint.textContent  = `${count} ingredient${count !== 1 ? 's' : ''} added`;
+    searchBtn.disabled = count === 0;
+
+    /* Remove old tags */
+    area.querySelectorAll('.ing-tag').forEach(el => el.remove());
+
+    userIngredients.forEach(ing => {
+      const tag = document.createElement('span');
+      tag.className = 'ing-tag';
+      tag.innerHTML = `${ing}
+        <button class="ing-tag-remove" onclick="removeIngredient('${ing}')" title="Remove">&#x2715;</button>`;
+      area.appendChild(tag);
+    });
+  }
+
+  /* ── RUN SEARCH ── */
+  function runSearch() {
+    if (!userIngredients.length) return;
+
+    allMatched = matchRecipes(userIngredients);
+
+    document.getElementById('results-section').style.display = 'block';
+    document.getElementById('initial-state').style.display   = 'none';
+
+    const subtitle = `Searched for: ${userIngredients.join(', ')}`;
+    document.getElementById('results-subtitle').textContent = subtitle;
+
+    applyResultFilters();
+
+    /* Smooth scroll to results */
+    document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ── APPLY FILTERS ON RESULTS ── */
+  function applyResultFilters() {
+    let results = [...allMatched];
+
+    const cat  = document.getElementById('res-filter-category')?.value;
+    const diff = document.getElementById('res-filter-difficulty')?.value;
+    const sort = document.getElementById('res-sort')?.value || 'match';
+
+    if (cat)  results = results.filter(r => r.category   === cat);
+    if (diff) results = results.filter(r => r.difficulty === diff);
+
+    if (sort === 'time-asc') {
+      results.sort((a, b) =>
+        ((a.prepTime||0)+(a.bakeTime||0)) - ((b.prepTime||0)+(b.bakeTime||0)));
+    } else if (sort === 'name-asc') {
+      results.sort((a, b) => a.title.localeCompare(b.title));
+    }
+    /* default = matchPercent desc (already from matchRecipes) */
+
+    /* Update badge */
+    const badge = document.getElementById('results-count-badge');
+    badge.textContent = `${results.length} recipe${results.length !== 1 ? 's' : ''}`;
+
+    renderRecipeGrid('results-grid', results, {
+      showMatch:  true,
+      emptyTitle: 'No matches found',
+      emptyText:  'Try adding different ingredients or removing a filter.',
+    });
+  }
+
+  function hideResults() {
+    document.getElementById('results-section').style.display = 'none';
+    document.getElementById('initial-state').style.display   = 'block';
+    allMatched = [];
+  }
+</script>
+</body>
+</html>

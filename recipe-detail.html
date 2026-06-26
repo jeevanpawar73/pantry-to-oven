@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Recipe — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: var(--sp-8);
+      align-items: start;
+      padding-top: var(--sp-8);
+      padding-bottom: var(--sp-16);
+    }
+
+    .detail-main {}
+
+    .detail-sidebar {
+      position: sticky;
+      top: calc(var(--nav-height) + var(--sp-6));
+    }
+
+    .sidebar-card {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+      margin-bottom: var(--sp-4);
+    }
+
+    .sidebar-card-header {
+      padding: var(--sp-4) var(--sp-5);
+      border-bottom: 1px solid var(--cream-border);
+      background: var(--cream);
+    }
+
+    .sidebar-card-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      color: var(--brown-deep);
+    }
+
+    .sidebar-card-body { padding: var(--sp-5); }
+
+    /* Hero image */
+    .detail-hero {
+      position: relative;
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      aspect-ratio: 16/7;
+      background: var(--cream-dark);
+      margin-bottom: var(--sp-6);
+    }
+
+    .detail-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .detail-hero-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(26,15,10,0.72) 0%, transparent 55%);
+    }
+
+    .detail-hero-content {
+      position: absolute;
+      bottom: var(--sp-6);
+      left: var(--sp-6);
+      right: var(--sp-6);
+    }
+
+    .detail-hero-badges {
+      display: flex;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-3);
+      flex-wrap: wrap;
+    }
+
+    .detail-title {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3.5vw, 2.2rem);
+      color: var(--white);
+      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+      line-height: 1.2;
+      margin-bottom: var(--sp-2);
+    }
+
+    .detail-description {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.6;
+      max-width: 560px;
+    }
+
+    /* Content sections */
+    .content-section {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-xs);
+      overflow: hidden;
+      margin-bottom: var(--sp-5);
+    }
+
+    .content-section-header {
+      padding: var(--sp-4) var(--sp-6);
+      border-bottom: 1px solid var(--cream-border);
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+    }
+
+    .content-section-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--orange-pale);
+      border-radius: var(--r-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .content-section-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      color: var(--brown-deep);
+    }
+
+    .content-section-body { padding: var(--sp-5) var(--sp-6); }
+
+    /* Stat strip */
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border-bottom: 1px solid var(--cream-border);
+    }
+
+    .stat-strip-item {
+      padding: var(--sp-4);
+      text-align: center;
+      border-right: 1px solid var(--cream-border);
+    }
+
+    .stat-strip-item:last-child { border-right: none; }
+
+    .stat-strip-value {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      display: block;
+    }
+
+    .stat-strip-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--gray-400);
+      font-weight: 700;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: var(--sp-5);
+      padding: var(--sp-2) 0;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color var(--t-fast) var(--ease);
+    }
+
+    .back-btn:hover { color: var(--brown); }
+
+    /* Checklist ingredients */
+    .ingredient-check-item {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-3);
+      padding: var(--sp-3);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: background var(--t-fast) var(--ease);
+      user-select: none;
+    }
+
+    .ingredient-check-item:hover { background: var(--gray-50); }
+
+    .ingredient-check-item.checked {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+
+    .ingredient-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid var(--cream-border);
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      color: var(--white);
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .ingredient-check-item.checked .ingredient-checkbox {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .ingredient-check-item.checked .ingredient-checkbox::after {
+      content: '✓';
+    }
+
+    /* Save btn in sidebar */
+    .save-toggle-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--sp-2);
+      padding: 12px;
+      border-radius: var(--r-md);
+      border: 2px solid var(--cream-border);
+      background: var(--white);
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      margin-bottom: var(--sp-3);
+    }
+
+    .save-toggle-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-pale);
+    }
+
+    .save-toggle-btn.saved {
+      background: var(--orange-pale);
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    @media (max-width: 900px) {
+      .detail-layout {
+        grid-template-columns: 1fr;
+      }
+      .detail-sidebar {
+        position: static;
+        order: -1;
+      }
+      .stat-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stat-strip-item:nth-child(2) { border-right: none; }
+      .stat-strip-item:nth-child(3) { border-top: 1px solid var(--cream-border); }
+      .stat-strip-item:nth-child(4) { border-top: 1px solid var(--cream-border); }
+    }
+
+    @media (max-width: 540px) {
+      .detail-hero { aspect-ratio: 4/3; }
+      .content-section-body { padding: var(--sp-4); }
+    }
+  </style>
+</head>
+<body class="page-wrapper">
+
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="navbar-logo-icon">🧁</div>
+        <div>
+          <span class="navbar-brand-text">Pantry-to-Oven</span>
+          <span class="navbar-brand-sub">Smart Baking System</span>
+        </div>
+      </a>
+      <ul class="navbar-nav" id="main-nav">
+        <li><a href="home.html"            class="nav-link">Home</a></li>
+        <li><a href="search.html"          class="nav-link">&#x1F50D; Ingredient Search</a></li>
+        <li><a href="saved.html"           class="nav-link">&#x2665; Saved</a></li>
+        <li><a href="recently-viewed.html" class="nav-link">&#x1F552; Recent</a></li>
+        <li><a href="profile.html"         class="nav-link">Profile</a></li>
+      </ul>
+      <div class="navbar-actions">
+        <div style="display:flex;align-items:center;gap:var(--sp-2);">
+          <div class="nav-avatar" id="nav-avatar">?</div>
+          <span class="text-sm font-semi" id="nav-username" style="color:var(--brown-deep);"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="nav-logout">Sign out</button>
+        <button class="navbar-toggle" id="navbar-toggle">&#9776;</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="page-content">
+    <div class="container">
+
+      <button class="back-btn" onclick="history.back()">
+        &#8592; Back
+      </button>
+
+      <div class="detail-layout">
+
+        <!-- LEFT: Main content -->
+        <div class="detail-main" id="detail-main">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- RIGHT: Sidebar -->
+        <aside class="detail-sidebar" id="detail-sidebar">
+          <!-- Populated by JS -->
+        </aside>
+
+      </div>
+    </div>
+  </main>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/recipes.js"></script>
+<script>
+  let currentRecipe = null;
+  let currentUser   = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData();
+    requireAuth();
+    initNavbar();
+
+    currentUser = getCurrentUser();
+
+    const params = new URLSearchParams(window.location.search);
+    const id     = params.get('id');
+
+    if (!id) { window.location.href = 'home.html'; return; }
+
+    currentRecipe = getRecipeById(id);
+    if (!currentRecipe) { window.location.href = 'home.html'; return; }
+
+    /* Track view */
+    if (currentUser && currentUser.role !== 'admin') {
+      addViewed(currentUser.username, id);
+    }
+
+    document.title = `${currentRecipe.title} — Pantry-to-Oven`;
+    renderDetail();
+    renderSidebar();
+  });
+
+  /* ── RENDER MAIN CONTENT ── */
+  function renderDetail() {
+    const r = currentRecipe;
+    const totalTime = (r.prepTime || 0) + (r.bakeTime || 0);
+    const diffClass = getDifficultyClass(r.difficulty);
+
+    const imageHTML = r.image
+      ? `<img src="${r.image}" alt="${r.title}" onerror="this.style.display='none'">`
+      : `<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:4rem;">🧁</div>`;
+
+    const stepsHTML = (r.steps || []).map((step, i) => `
+      <div class="step-item">
+        <div class="step-item-num">${i + 1}</div>
+        <div>
+          <p style="margin-bottom:${step.tip ? 'var(--sp-2)' : '0'};">${step.instruction}</p>
+          ${step.tip ? `<p style="font-size:0.82rem;color:var(--amber);font-weight:600;">&#128161; ${step.tip}</p>` : ''}
+        </div>
+      </div>`).join('');
+
+    const nutritionHTML = r.nutrition ? `
+      <div class="nutrition-grid">
+        ${Object.entries(r.nutrition).map(([k, v]) => `
+          <div class="nutrition-item">
+            <div class="nutrition-value">${v}</div>
+            <div class="nutrition-label">${k}</div>
+          </div>`).join('')}
+      </div>` : '<p class="text-muted text-sm">Nutrition info not available.</p>';
+
+    document.getElementById('detail-main').innerHTML = `
+      <!-- Hero image -->
+      <div class="detail-hero">
+        ${imageHTML}
+        <div class="detail-hero-overlay"></div>
+        <div class="detail-hero-content">
+          <div class="detail-hero-badges">
+            <span class="badge badge-category">${r.category}</span>
+            <span class="badge badge-${diffClass}">${r.difficulty}</span>
+          </div>
+          <h1 class="detail-title">${r.title}</h1>
+          <p class="detail-description">${r.description || ''}</p>
+        </div>
+      </div>
+
+      <!-- Stat strip -->
+      <div class="content-section" style="margin-bottom:var(--sp-5);">
+        <div class="stat-strip">
+          <div class="stat-strip-item">
+            <span class="stat-strip-value">&#128336; ${formatTime(r.prepTime)}</span>
+            <span class="stat-strip-label">Prep Time</span>
+          </div>
+          <div class="stat-strip-item">
+            <span class="stat-strip-value">&#x1F525; ${formatTime(r.bakeTime)}</span>
+            <span class="stat-strip-label">Bake Time</span>
+          </div>
+          <div class="stat-strip-item">
+            <span class="stat-strip-value">&#9202; ${formatTime(totalTime)}</span>
+            <span class="stat-strip-label">Total Time</span>
+          </div>
+          <div class="stat-strip-item">
+            <span class="stat-strip-value">&#128101; ${r.servings}</span>
+            <span class="stat-strip-label">Servings</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="content-section">
+        <div class="content-section-header">
+          <div class="content-section-icon">&#x1F4DD;</div>
+          <h2 class="content-section-title">Instructions</h2>
+        </div>
+        <div class="content-section-body">
+          <div class="steps-list">${stepsHTML}</div>
+        </div>
+      </div>
+
+      <!-- Nutrition -->
+      <div class="content-section">
+        <div class="content-section-header">
+          <div class="content-section-icon">&#x1F4CA;</div>
+          <h2 class="content-section-title">Nutrition per serving</h2>
+        </div>
+        <div class="content-section-body">${nutritionHTML}</div>
+      </div>`;
+  }
+
+  /* ── RENDER SIDEBAR ── */
+  function renderSidebar() {
+    const r    = currentRecipe;
+    const user = currentUser;
+    const saved = user && user.role !== 'admin' ? isSaved(user.username, r.id) : false;
+    const completed = user && user.role !== 'admin' ? isCompleted(user.username, r.id) : false;
+
+    const ingredientsHTML = (r.ingredients || []).map((ing, i) => `
+      <div class="ingredient-check-item" id="ing-${i}" onclick="toggleIngredient(${i})">
+        <div class="ingredient-checkbox" id="ing-cb-${i}"></div>
+        <div>
+          <span class="ingredient-qty">${ing.qty}</span>
+          <span style="color:var(--gray-600);">${ing.name}</span>
+        </div>
+      </div>`).join('');
+
+    document.getElementById('detail-sidebar').innerHTML = `
+      <!-- Action buttons -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-body" style="display:flex;flex-direction:column;gap:var(--sp-3);">
+          <a href="step-guide.html?id=${r.id}" class="btn btn-primary btn-full btn-lg">
+            &#x1F373; Start Baking
+          </a>
+          ${user && user.role !== 'admin' ? `
+          <button
+            class="save-toggle-btn ${saved ? 'saved' : ''}"
+            id="save-toggle-btn"
+            onclick="handleSaveToggle()"
+          >
+            <span id="save-btn-icon">${saved ? '♥' : '♡'}</span>
+            <span id="save-btn-text">${saved ? 'Saved' : 'Save Recipe'}</span>
+          </button>
+          ${completed ? `
+          <div style="text-align:center;padding:var(--sp-2);background:var(--success-bg);border-radius:var(--r-md);font-size:0.85rem;font-weight:700;color:var(--success);">
+            &#10003; You completed this recipe!
+          </div>` : ''}` : ''}
+        </div>
+      </div>
+
+      <!-- Ingredients checklist -->
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">
+          <h2 class="sidebar-card-title">&#x1F6D2; Ingredients
+            <span style="font-size:0.8rem;font-weight:400;color:var(--gray-400);font-family:var(--font-body);">
+              — tap to check off
+            </span>
+          </h2>
+        </div>
+        <div class="sidebar-card-body" style="padding:var(--sp-3);">
+          <div id="ingredients-checklist">${ingredientsHTML}</div>
+          <button
+            onclick="resetChecklist()"
+            style="width:100%;margin-top:var(--sp-3);font-size:0.78rem;color:var(--gray-400);background:none;border:none;cursor:pointer;text-decoration:underline;"
+          >Reset checklist</button>
+        </div>
+      </div>`;
+  }
+
+  /* ── INTERACTIONS ── */
+  function handleSaveToggle() {
+    if (!currentUser || currentUser.role === 'admin') return;
+    const nowSaved = toggleSave(currentUser.username, currentRecipe.id);
+    const btn  = document.getElementById('save-toggle-btn');
+    const icon = document.getElementById('save-btn-icon');
+    const text = document.getElementById('save-btn-text');
+    btn.classList.toggle('saved', nowSaved);
+    icon.textContent = nowSaved ? '♥' : '♡';
+    text.textContent = nowSaved ? 'Saved' : 'Save Recipe';
+    showToast(nowSaved ? '♥ Recipe saved!' : 'Recipe removed from saved.');
+  }
+
+  function toggleIngredient(i) {
+    const row = document.getElementById(`ing-${i}`);
+    row.classList.toggle('checked');
+  }
+
+  function resetChecklist() {
+    document.querySelectorAll('.ingredient-check-item').forEach(el => {
+      el.classList.remove('checked');
+    });
+  }
+</script>
+</body>
+</html>

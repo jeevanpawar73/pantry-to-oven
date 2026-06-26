@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* ── Hero ── */
+    .home-hero {
+      padding: var(--sp-12) 0 var(--sp-10);
+      text-align: center;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+      background: var(--orange-pale);
+      padding: 4px 14px;
+      border-radius: var(--r-full);
+      margin-bottom: var(--sp-4);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--brown-deep);
+      line-height: 1.2;
+      margin-bottom: var(--sp-4);
+    }
+
+    .hero-title .italic {
+      color: var(--orange);
+    }
+
+    .hero-subtitle {
+      font-size: 1.05rem;
+      color: var(--gray-600);
+      max-width: 500px;
+      margin-inline: auto;
+      margin-bottom: var(--sp-8);
+      line-height: 1.65;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: var(--sp-3);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: var(--sp-8);
+      justify-content: center;
+      margin-top: var(--sp-8);
+      padding-top: var(--sp-6);
+      border-top: 1px solid var(--cream-border);
+      flex-wrap: wrap;
+    }
+
+    .hero-stat {
+      text-align: center;
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      display: block;
+    }
+
+    .hero-stat-label {
+      font-size: 0.78rem;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 600;
+    }
+
+    /* ── Search & Filter bar ── */
+    .search-section {
+      background: var(--white);
+      border-bottom: 1px solid var(--cream-border);
+      padding: var(--sp-5) 0;
+      position: sticky;
+      top: var(--nav-height);
+      z-index: 50;
+      box-shadow: var(--shadow-xs);
+    }
+
+    .search-filter-row {
+      display: flex;
+      gap: var(--sp-3);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .search-bar {
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .filter-selects {
+      display: flex;
+      gap: var(--sp-2);
+      flex-wrap: wrap;
+    }
+
+    .filter-selects .form-select {
+      width: auto;
+      min-width: 140px;
+      padding-top: 9px;
+      padding-bottom: 9px;
+      font-size: 0.875rem;
+    }
+
+    .result-count-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-5) 0 var(--sp-3);
+      flex-wrap: wrap;
+      gap: var(--sp-2);
+    }
+
+    .result-count-text {
+      font-size: 0.875rem;
+      color: var(--gray-400);
+      font-weight: 600;
+    }
+
+    .result-count-text span {
+      color: var(--brown);
+    }
+
+    /* ── Category pills ── */
+    .category-pills {
+      display: flex;
+      gap: var(--sp-2);
+      overflow-x: auto;
+      padding-bottom: var(--sp-1);
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .category-pills::-webkit-scrollbar { display: none; }
+
+    .cat-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 16px;
+      border-radius: var(--r-full);
+      border: 1.5px solid var(--cream-border);
+      background: var(--white);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all var(--t-fast) var(--ease);
+      flex-shrink: 0;
+    }
+
+    .cat-pill:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+      background: var(--orange-pale);
+    }
+
+    .cat-pill.active {
+      background: var(--orange);
+      border-color: var(--orange);
+      color: var(--white);
+    }
+
+    /* ── Sort ── */
+    .sort-select {
+      font-size: 0.82rem;
+      padding: 6px 30px 6px 10px;
+      width: auto;
+    }
+
+    /* ── Navbar ── */
+    .navbar-user {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .nav-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-full);
+      background: var(--brown);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      flex-shrink: 0;
+      border: 2px solid var(--orange-pale);
+    }
+
+    /* Clear filters button */
+    .clear-filters-btn {
+      font-size: 0.78rem;
+      color: var(--gray-400);
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-decoration: underline;
+      transition: color var(--t-fast) var(--ease);
+      white-space: nowrap;
+    }
+
+    .clear-filters-btn:hover { color: var(--brown); }
+
+    @media (max-width: 640px) {
+      .filter-selects { width: 100%; }
+      .filter-selects .form-select { flex: 1; min-width: 100px; }
+      .hero-stats { gap: var(--sp-5); }
+    }
+  </style>
+</head>
+<body class="page-wrapper">
+
+  <!-- ── NAVBAR ── -->
+  <nav class="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="navbar-logo-icon">🧁</div>
+        <div>
+          <span class="navbar-brand-text">Pantry-to-Oven</span>
+          <span class="navbar-brand-sub">Smart Baking System</span>
+        </div>
+      </a>
+
+      <ul class="navbar-nav" id="main-nav">
+        <li><a href="home.html"           class="nav-link">Home</a></li>
+        <li><a href="search.html"         class="nav-link">&#x1F50D; Ingredient Search</a></li>
+        <li><a href="saved.html"          class="nav-link">&#x2665; Saved</a></li>
+        <li><a href="recently-viewed.html" class="nav-link">&#x1F552; Recent</a></li>
+        <li><a href="profile.html"        class="nav-link">Profile</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        <div class="navbar-user">
+          <div class="nav-avatar" id="nav-avatar">?</div>
+          <span class="text-sm font-semi" id="nav-username" style="color:var(--brown-deep);"></span>
+        </div>
+        <button class="btn btn-ghost btn-sm" id="nav-logout">Sign out</button>
+        <button class="navbar-toggle" id="navbar-toggle" aria-label="Toggle menu">&#9776;</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <div class="home-hero">
+    <div class="container">
+      <span class="hero-eyebrow">&#127859; Your Smart Baking Companion</span>
+      <h1 class="hero-title">
+        Bake Something<br>
+        <span class="italic">Amazing Today</span>
+      </h1>
+      <p class="hero-subtitle">
+        Discover recipes based on what's in your pantry. Search by ingredients,
+        follow step-by-step guides, and save your favourites.
+      </p>
+      <div class="hero-actions">
+        <a href="search.html" class="btn btn-primary btn-lg">
+          &#x1F50D; Search by Ingredients
+        </a>
+        <a href="#all-recipes" class="btn btn-secondary btn-lg">
+          Browse All Recipes
+        </a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-recipes">21</span>
+          <span class="hero-stat-label">Recipes</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value">7</span>
+          <span class="hero-stat-label">Categories</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-saved">0</span>
+          <span class="hero-stat-label">Your Saves</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-value" id="stat-completed">0</span>
+          <span class="hero-stat-label">Completed</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STICKY SEARCH + FILTER ── -->
+  <div class="search-section">
+    <div class="container">
+      <div class="search-filter-row">
+        <div class="search-bar" id="main-search-bar">
+          <span style="color:var(--gray-400);font-size:1rem;">&#x1F50D;</span>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search recipes, ingredients..."
+            autocomplete="off"
+            aria-label="Search recipes"
+          />
+          <button
+            id="clear-search"
+            style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:1rem;display:none;"
+            onclick="clearSearch()"
+            aria-label="Clear search"
+          >&#x2715;</button>
+        </div>
+
+        <div class="filter-selects">
+          <select class="form-select" id="filter-difficulty" aria-label="Filter by difficulty">
+          </select>
+          <select class="form-select" id="filter-time" aria-label="Filter by time">
+          </select>
+          <select class="form-select sort-select" id="sort-by" aria-label="Sort recipes">
+            <option value="default">Sort: Default</option>
+            <option value="time-asc">Time: Shortest</option>
+            <option value="time-desc">Time: Longest</option>
+            <option value="name-asc">Name: A–Z</option>
+            <option value="name-desc">Name: Z–A</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MAIN CONTENT ── -->
+  <main class="page-content-full" id="all-recipes">
+    <div class="container" style="padding-top: var(--sp-8); padding-bottom: var(--sp-16);">
+
+      <!-- Category pills -->
+      <div class="category-pills" id="category-pills" role="group" aria-label="Filter by category">
+        <button class="cat-pill active" data-cat="" onclick="setCategoryFilter(this, '')">
+          All
+        </button>
+      </div>
+
+      <!-- Result count + clear -->
+      <div class="result-count-bar">
+        <p class="result-count-text">
+          Showing <span id="result-count">21</span> recipes
+        </p>
+        <button class="clear-filters-btn" id="clear-all-btn" onclick="clearAllFilters()" style="display:none;">
+          Clear all filters
+        </button>
+      </div>
+
+      <!-- Recipe grid -->
+      <div class="recipes-grid stagger" id="recipes-grid">
+        <!-- Populated by JS -->
+      </div>
+
+    </div>
+  </main>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/recipes.js"></script>
+<script>
+  /* ── State ── */
+  let allRecipes   = [];
+  let activeFilter = { query: '', category: '', difficulty: '', maxTime: '' };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData();
+    requireAuth();
+    initNavbar();
+
+    allRecipes = getRecipes();
+
+    /* Update hero stats */
+    updateHeroStats();
+
+    /* Build filter dropdowns */
+    buildDifficultyOptions('filter-difficulty');
+    buildTimeOptions('filter-time');
+    buildCategoryPills();
+
+    /* Initial render */
+    applyFilters();
+
+    /* Search input */
+    const searchInput = document.getElementById('search-input');
+    searchInput.addEventListener('input', () => {
+      activeFilter.query = searchInput.value;
+      document.getElementById('clear-search').style.display =
+        searchInput.value ? 'block' : 'none';
+      applyFilters();
+    });
+
+    /* Difficulty + Time filters */
+    document.getElementById('filter-difficulty').addEventListener('change', (e) => {
+      activeFilter.difficulty = e.target.value;
+      applyFilters();
+    });
+
+    document.getElementById('filter-time').addEventListener('change', (e) => {
+      activeFilter.maxTime = e.target.value;
+      applyFilters();
+    });
+
+    /* Sort */
+    document.getElementById('sort-by').addEventListener('change', applyFilters);
+  });
+
+  /* ── Build category pills dynamically ── */
+  function buildCategoryPills() {
+    const container = document.getElementById('category-pills');
+    const catEmojis = {
+      'Cakes':    '🎂',
+      'Cookies':  '🍪',
+      'Bread':    '🍞',
+      'Pastries': '🥐',
+      'Muffins':  '🧁',
+      'Pies':     '🥧',
+      'Tarts':    '🫓',
+    };
+
+    CATEGORIES.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'cat-pill';
+      btn.dataset.cat = cat;
+      btn.innerHTML = `${catEmojis[cat] || ''} ${cat}`;
+      btn.onclick = () => setCategoryFilter(btn, cat);
+      container.appendChild(btn);
+    });
+  }
+
+  /* ── Category filter ── */
+  function setCategoryFilter(btn, cat) {
+    document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter.category = cat;
+    applyFilters();
+  }
+
+  /* ── Main filter + sort + render ── */
+  function applyFilters() {
+    let results = filterRecipes(allRecipes, activeFilter);
+
+    /* Sort */
+    const sort = document.getElementById('sort-by').value;
+    if (sort === 'time-asc') {
+      results.sort((a, b) =>
+        ((a.prepTime||0)+(a.bakeTime||0)) - ((b.prepTime||0)+(b.bakeTime||0)));
+    } else if (sort === 'time-desc') {
+      results.sort((a, b) =>
+        ((b.prepTime||0)+(b.bakeTime||0)) - ((a.prepTime||0)+(a.bakeTime||0)));
+    } else if (sort === 'name-asc') {
+      results.sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sort === 'name-desc') {
+      results.sort((a, b) => b.title.localeCompare(a.title));
+    }
+
+    /* Render */
+    renderRecipeGrid('recipes-grid', results, {
+      emptyTitle: 'No recipes found',
+      emptyText:  'Try a different search term or clear your filters.',
+      emptyAction: `<button class="btn btn-secondary" onclick="clearAllFilters()">Clear filters</button>`,
+    });
+
+    /* Update count */
+    document.getElementById('result-count').textContent = results.length;
+
+    /* Show/hide clear button */
+    const hasFilters = activeFilter.query || activeFilter.category ||
+                       activeFilter.difficulty || activeFilter.maxTime;
+    document.getElementById('clear-all-btn').style.display = hasFilters ? 'block' : 'none';
+  }
+
+  /* ── Clear helpers ── */
+  function clearSearch() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('clear-search').style.display = 'none';
+    activeFilter.query = '';
+    applyFilters();
+  }
+
+  function clearAllFilters() {
+    activeFilter = { query: '', category: '', difficulty: '', maxTime: '' };
+    document.getElementById('search-input').value = '';
+    document.getElementById('clear-search').style.display = 'none';
+    document.getElementById('filter-difficulty').value = '';
+    document.getElementById('filter-time').value = '';
+    document.getElementById('sort-by').value = 'default';
+    document.querySelectorAll('.cat-pill').forEach((p, i) => {
+      p.classList.toggle('active', i === 0);
+    });
+    applyFilters();
+  }
+
+  /* ── Hero stats ── */
+  function updateHeroStats() {
+    const user = getCurrentUser();
+    document.getElementById('stat-recipes').textContent = allRecipes.length;
+    if (user && user.role !== 'admin') {
+      document.getElementById('stat-saved').textContent =
+        getSaved(user.username).length;
+      document.getElementById('stat-completed').textContent =
+        getCompleted(user.username).length;
+    }
+  }
+</script>
+</body>
+</html>

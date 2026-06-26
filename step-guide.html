@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step Guide — Pantry-to-Oven</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    body { background: var(--cream); }
+
+    /* Minimal top bar for step mode */
+    .guide-topbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 56px;
+      background: rgba(253,246,236,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--cream-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 var(--sp-6);
+      z-index: 100;
+    }
+
+    .guide-topbar-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: var(--brown-deep);
+      font-weight: 600;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .guide-topbar-meta {
+      font-size: 0.75rem;
+      color: var(--gray-400);
+      font-weight: 600;
+    }
+
+    .guide-exit-btn {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-1);
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--gray-600);
+      background: none;
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      padding: 5px 12px;
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+      text-decoration: none;
+    }
+
+    .guide-exit-btn:hover {
+      color: var(--brown);
+      border-color: var(--brown-light);
+    }
+
+    /* Main guide area */
+    .guide-wrapper {
+      min-height: 100vh;
+      padding: 80px var(--sp-6) var(--sp-12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .guide-inner {
+      width: 100%;
+      max-width: 680px;
+    }
+
+    /* Progress */
+    .guide-progress-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--sp-3);
+    }
+
+    .guide-step-counter {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .guide-pct {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--orange);
+    }
+
+    /* Step card */
+    .guide-step-card {
+      background: var(--white);
+      border-radius: var(--r-xl);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-md);
+      padding: var(--sp-8);
+      margin-bottom: var(--sp-6);
+      animation: fadeInUp 0.3s var(--ease) both;
+    }
+
+    .guide-step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: var(--orange-pale);
+      color: var(--orange);
+      border-radius: var(--r-full);
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: var(--sp-5);
+      border: 2px solid rgba(232,116,58,0.2);
+    }
+
+    .guide-step-instruction {
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--gray-800);
+      margin-bottom: var(--sp-4);
+    }
+
+    .guide-step-tip {
+      padding: var(--sp-4);
+      background: var(--amber-pale);
+      border-left: 3px solid var(--amber-light);
+      border-radius: 0 var(--r-md) var(--r-md) 0;
+      font-size: 0.875rem;
+      color: var(--gray-600);
+      line-height: 1.65;
+    }
+
+    .guide-step-tip-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: var(--sp-1);
+    }
+
+    /* Timer */
+    .guide-timer {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-4);
+      margin-top: var(--sp-5);
+      padding: var(--sp-4) var(--sp-5);
+      background: var(--cream);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+    }
+
+    .guide-timer-display {
+      font-family: var(--font-display);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--brown-deep);
+      letter-spacing: 0.04em;
+      min-width: 110px;
+    }
+
+    .guide-timer-display.running { color: var(--orange); }
+    .guide-timer-display.done    { color: var(--success); }
+
+    .guide-timer-controls {
+      display: flex;
+      gap: var(--sp-2);
+      flex-wrap: wrap;
+    }
+
+    .timer-input-row {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      margin-bottom: var(--sp-3);
+    }
+
+    .timer-input-row input {
+      width: 70px;
+      padding: 6px 10px;
+      border: 1.5px solid var(--cream-border);
+      border-radius: var(--r-md);
+      font-family: var(--font-display);
+      font-size: 1rem;
+      text-align: center;
+      color: var(--brown-deep);
+      background: var(--white);
+    }
+
+    .timer-input-row input:focus {
+      border-color: var(--orange);
+      outline: none;
+    }
+
+    /* Navigation */
+    .guide-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--sp-4);
+    }
+
+    /* Dot indicators */
+    .guide-dots {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .guide-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: var(--r-full);
+      background: var(--cream-dark);
+      border: 1.5px solid var(--cream-border);
+      cursor: pointer;
+      transition: all var(--t-fast) var(--ease);
+    }
+
+    .guide-dot.done    { background: var(--success);    border-color: var(--success); }
+    .guide-dot.active  { background: var(--orange);     border-color: var(--orange); transform: scale(1.4); }
+    .guide-dot:hover   { border-color: var(--brown-light); }
+
+    /* Ingredients sidebar strip */
+    .guide-ingredients {
+      background: var(--white);
+      border-radius: var(--r-lg);
+      border: 1px solid var(--cream-border);
+      box-shadow: var(--shadow-xs);
+      padding: var(--sp-5);
+      margin-bottom: var(--sp-6);
+    }
+
+    .guide-ingredients-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      color: var(--brown-deep);
+      margin-bottom: var(--sp-3);
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+    }
+
+    .guide-ing-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--sp-2);
+    }
+
+    .guide-ing-tag {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      background: var(--orange-pale);
+      color: var(--brown);
+      border: 1px solid var(--brown-light);
+      border-radius: var(--r-full);
+      font-weight: 600;
+    }
+
+    /* Completion screen */
+    .completion-screen {
+      text-align: center;
+      padding: var(--sp-10) var(--sp-6);
+      animation: fadeInUp 0.5s var(--ease) both;
+    }
+
+    .completion-icon {
+      font-size: 4rem;
+      display: block;
+      margin-bottom: var(--sp-4);
+    }
+
+    .completion-title {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      color: var(--brown-deep);
+      margin-bottom: var(--sp-3);
+    }
+
+    .completion-subtitle {
+      font-size: 1rem;
+      color: var(--gray-600);
+      margin-bottom: var(--sp-8);
+      line-height: 1.6;
+    }
+
+    .completion-actions {
+      display: flex;
+      gap: var(--sp-3);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 540px) {
+      .guide-step-card { padding: var(--sp-5); }
+      .guide-timer-display { font-size: 1.6rem; min-width: 90px; }
+      .guide-step-instruction { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Minimal top bar -->
+  <div class="guide-topbar">
+    <div>
+      <div class="guide-topbar-title" id="topbar-title">Loading...</div>
+      <div class="guide-topbar-meta" id="topbar-meta"></div>
+    </div>
+    <a class="guide-exit-btn" id="exit-btn" href="home.html">&#x2715; Exit</a>
+  </div>
+
+  <div class="guide-wrapper">
+    <div class="guide-inner" id="guide-inner">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+<script src="js/storage.js"></script>
+<script src="js/data.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let recipe       = null;
+  let currentStep  = 0;
+  let totalSteps   = 0;
+  let currentUser  = null;
+  let timerInterval = null;
+  let timerSeconds = 0;
+  let timerRunning = false;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    initSeedData();
+    requireAuth();
+
+    currentUser = getCurrentUser();
+
+    /* Wire logout if somehow triggered from this page */
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'nav-logout') handleLogout();
+    });
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) { window.location.href = 'home.html'; return; }
+
+    recipe      = getRecipeById(id);
+    if (!recipe) { window.location.href = 'home.html'; return; }
+
+    totalSteps  = (recipe.steps || []).length;
+    document.title = `${recipe.title} — Guide`;
+
+    document.getElementById('topbar-title').textContent = recipe.title;
+    document.getElementById('topbar-meta').textContent  =
+      `${recipe.difficulty} · ${formatTime((recipe.prepTime||0)+(recipe.bakeTime||0))}`;
+    document.getElementById('exit-btn').href = `recipe-detail.html?id=${recipe.id}`;
+    renderStep();
+  });
+
+  /* ── RENDER CURRENT STEP ── */
+  function renderStep() {
+    stopTimer();
+
+    if (currentStep >= totalSteps) {
+      renderCompletion();
+      return;
+    }
+
+    const step = recipe.steps[currentStep];
+    const pct  = Math.round((currentStep / totalSteps) * 100);
+
+    const tipHTML = step.tip ? `
+      <div class="guide-step-tip">
+        <span class="guide-step-tip-label">&#128161; Helpful Tip</span>
+        ${step.tip}
+      </div>` : '';
+
+    const dotsHTML = Array.from({ length: totalSteps }, (_, i) => `
+      <div
+        class="guide-dot ${i < currentStep ? 'done' : i === currentStep ? 'active' : ''}"
+        onclick="goToStep(${i})"
+        title="Step ${i + 1}"
+      ></div>`).join('');
+
+    const prevDisabled = currentStep === 0 ? 'disabled style="opacity:0.4;pointer-events:none;"' : '';
+
+    const ingredientsHTML = (recipe.ingredients || []).map(ing =>
+      `<span class="guide-ing-tag">${ing.qty} ${ing.name}</span>`).join('');
+
+    document.getElementById('guide-inner').innerHTML = `
+      <!-- Progress bar -->
+      <div class="guide-progress-header">
+        <span class="guide-step-counter">Step ${currentStep + 1} of ${totalSteps}</span>
+        <span class="guide-pct">${pct}% complete</span>
+      </div>
+      <div class="step-progress-bar" style="margin-bottom:var(--sp-6);">
+        <div class="step-progress-fill" style="width:${pct}%;"></div>
+      </div>
+
+      <!-- Ingredient strip (collapsible) -->
+      <div class="guide-ingredients">
+        <div class="guide-ingredients-title"
+          onclick="this.parentElement.querySelector('.guide-ing-list').classList.toggle('hidden')"
+          style="cursor:pointer;">
+          &#x1F6D2; Ingredients
+          <span style="font-size:0.75rem;color:var(--gray-400);font-family:var(--font-body);margin-left:auto;">tap to toggle</span>
+        </div>
+        <div class="guide-ing-list">${ingredientsHTML}</div>
+      </div>
+
+      <!-- Step card -->
+      <div class="guide-step-card">
+        <div class="guide-step-num">${currentStep + 1}</div>
+        <p class="guide-step-instruction">${step.instruction}</p>
+        ${tipHTML}
+
+        <!-- Timer -->
+        <div class="guide-timer">
+          <div>
+            <div class="guide-timer-display" id="timer-display">00:00</div>
+            <div class="timer-input-row" id="timer-input-row">
+              <input type="number" id="timer-min" value="5" min="0" max="99" placeholder="min" />
+              <span style="color:var(--gray-400);font-size:0.85rem;">min</span>
+              <input type="number" id="timer-sec" value="0" min="0" max="59" placeholder="sec" />
+              <span style="color:var(--gray-400);font-size:0.85rem;">sec</span>
+            </div>
+          </div>
+          <div class="guide-timer-controls">
+            <button class="btn btn-secondary btn-sm" onclick="startTimer()">&#x25B6; Start</button>
+            <button class="btn btn-ghost btn-sm" onclick="pauseTimer()">&#x23F8; Pause</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetTimer()">&#x21BA; Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <div class="guide-nav">
+        <button class="btn btn-secondary" ${prevDisabled} onclick="prevStep()">
+          &#8592; Previous
+        </button>
+        <div class="guide-dots">${dotsHTML}</div>
+        <button class="btn btn-primary" onclick="nextStep()">
+          ${currentStep === totalSteps - 1 ? '&#x2713; Finish' : 'Next &#8594;'}
+        </button>
+      </div>`;
+  }
+
+  /* ── NAVIGATION ── */
+  function nextStep() {
+    stopTimer();
+    if (currentStep < totalSteps) {
+      currentStep++;
+      renderStep();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function prevStep() {
+    stopTimer();
+    if (currentStep > 0) {
+      currentStep--;
+      renderStep();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  function goToStep(i) {
+    stopTimer();
+    currentStep = i;
+    renderStep();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ── TIMER ── */
+  function startTimer() {
+    if (timerRunning) return;
+    const minEl = document.getElementById('timer-min');
+    const secEl = document.getElementById('timer-sec');
+
+    if (!timerSeconds) {
+      const mins = parseInt(minEl?.value || 0);
+      const secs = parseInt(secEl?.value || 0);
+      timerSeconds = (mins * 60) + secs;
+    }
+
+    if (timerSeconds <= 0) return;
+
+    const inputRow = document.getElementById('timer-input-row');
+    if (inputRow) inputRow.style.display = 'none';
+
+    timerRunning = true;
+    updateTimerDisplay();
+
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) {
+        stopTimer();
+        showTimerDone();
+      }
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    if (!timerRunning) return;
+    clearInterval(timerInterval);
+    timerRunning = false;
+    const display = document.getElementById('timer-display');
+    if (display) display.classList.remove('running');
+  }
+
+  function stopTimer() {
+    clearInterval(timerInterval);
+    timerRunning  = false;
+    timerSeconds  = 0;
+  }
+
+  function resetTimer() {
+    stopTimer();
+    const display  = document.getElementById('timer-display');
+    const inputRow = document.getElementById('timer-input-row');
+    if (display)  { display.textContent = '00:00'; display.className = 'guide-timer-display'; }
+    if (inputRow) inputRow.style.display = 'flex';
+  }
+
+  function updateTimerDisplay() {
+    const display = document.getElementById('timer-display');
+    if (!display) return;
+    const m = Math.floor(timerSeconds / 60).toString().padStart(2, '0');
+    const s = (timerSeconds % 60).toString().padStart(2, '0');
+    display.textContent = `${m}:${s}`;
+    display.className   = `guide-timer-display ${timerSeconds > 0 ? 'running' : ''}`;
+  }
+
+  function showTimerDone() {
+    const display = document.getElementById('timer-display');
+    if (display) {
+      display.textContent = 'Done! ✓';
+      display.className   = 'guide-timer-display done';
+    }
+    showToast('⏱ Timer finished!');
+  }
+
+  /* ── COMPLETION SCREEN ── */
+  function renderCompletion() {
+    if (currentUser && currentUser.role !== 'admin') {
+      markCompleted(currentUser.username, recipe.id);
+    }
+
+    document.getElementById('guide-inner').innerHTML = `
+      <div class="completion-screen">
+        <span class="completion-icon">&#x1F389;</span>
+        <h1 class="completion-title">You did it!</h1>
+        <p class="completion-subtitle">
+          You've completed <strong>${recipe.title}</strong>.<br>
+          Time to enjoy the fruits of your baking!
+        </p>
+        <div class="completion-actions">
+          <a href="recipe-detail.html?id=${recipe.id}" class="btn btn-secondary btn-lg">
+            &#8592; Back to Recipe
+          </a>
+          <a href="home.html" class="btn btn-primary btn-lg">
+            &#x1F373; Bake Another
+          </a>
+        </div>
+      </div>`;
+
+    showToast('🎉 Recipe marked as completed!');
+  }
+</script>
+</body>
+</html>
