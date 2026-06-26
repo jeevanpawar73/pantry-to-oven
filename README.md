@@ -45,6 +45,3 @@ Pantry to Oven is a responsive frontend web application that helps users discove
 ## 👨‍💻 Author
 
 **Jeevan Pawar**
-
-- GitHub: https://github.com/your-username
-- LinkedIn: https://linkedin.com/in/your-profile
